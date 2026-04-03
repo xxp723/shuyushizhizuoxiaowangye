@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>移动端 HTML 制作助手</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #0f172a;
+      --muted: #94a3b8;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --danger: #ef4444;
+      --success: #16a34a;
+      --border: #e2e8f0;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", "PingFang SC", "Helvetica", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--secondary);
+    }
+    h1, h2, h3 { margin: 0; }
+    a { color: var(--primary); }
+    .app {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .header h1 { font-size: 20px; }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      padding: 4px 0 8px;
+    }
+    .tab {
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .section { display: none; gap: 12px; }
+    .section.active { display: flex; flex-direction: column; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      font-size: 14px;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+      background: #fff;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    button {
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      font-weight: 600;
+    }
+    button.secondary { background: var(--secondary); color: #fff; }
+    button.ghost {
+      background: #fff;
+      color: var(--secondary);
+      border: 1px solid var(--border);
+    }
+    button.danger { background: var(--danger); color: #fff; }
+    button.success { background: var(--success); color: #fff; }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .btn-row button { flex: 1; min-width: 120px; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--secondary);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 999;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-6px);
+    }
+    .flex { display: flex; gap: 12px; }
+    .flex-col { display: flex; flex-direction: column; gap: 8px; }
+    .image-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .image-item {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #f1f5f9;
+    }
+    .image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .image-item button {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 14px;
+      line-height: 24px;
+    }
+    .code-area {
+      width: 100%;
+      min-height: 240px;
+      padding: 12px;
+      font-family: "JetBrains Mono", "Cascadia Code", monospace;
+      background: #0b1220;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      border: 1px solid #1f2937;
+      resize: vertical;
+      white-space: pre;
+      overflow: auto;
+    }
+    .code-area[contenteditable="true"] { outline: 2px solid var(--primary); }
+    .panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 768px) {
+      .tabs { grid-template-columns: repeat(2, 1fr); }
+      .panel { grid-template-columns: 1fr; }
+      .btn-row button { flex: 1 1 calc(50% - 8px); min-width: 140px; }
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #e0e7ff;
+      color: var(--primary);
+      font-size: 12px;
+    }
+    .note {
+      padding: 10px;
+      border-radius: 12px;
+      background: #fef9c3;
+      border: 1px solid #fcd34d;
+      color: #92400e;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1>移动端 HTML 制作助手</h1>
+      <div class="muted">四页工具：API 设置 / 制作 HTML / 生成与预览 / 预览本地文件。所有数据保存在本地浏览器，不会上传。</div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="page1">1. API 设置</div>
+      <div class="tab" data-tab="page2">2. 制作 HTML</div>
+      <div class="tab" data-tab="page3">3. 生成 & 预览</div>
+      <div class="tab" data-tab="page4">4. 预览本地文件</div>
+    </div>
+
+    <!-- Page 1: API Settings -->
+    <div class="section active" id="page1">
+      <div class="card flex-col">
+        <div class="badge">提示</div>
+        <div class="note">在前端直接填写 API Key 会暴露给本地浏览器，适合个人本地使用，勿公开分发。</div>
+
+        <div class="grid">
+          <div>
+            <label>API Base URL（OpenAI 兼容 /chat/completions）</label>
+            <input id="apiUrl" placeholder="例如：https://api.openai.com/v1/chat/completions" />
+          </div>
+          <div>
+            <label>API Key</label>
+            <input id="apiKey" type="password" placeholder="请输入 Key" />
+          </div>
+          <div>
+            <label>Model</label>
+            <input id="apiModel" placeholder="例如：gpt-4o-mini / gpt-3.5-turbo" />
+          </div>
+          <div>
+            <label>系统提示词（可选）</label>
+            <textarea id="apiSysPrompt" placeholder="为模型设置系统角色或生成约束"></textarea>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button id="saveApiBtn">保存设置</button>
+          <button class="secondary" id="testApiBtn">测试连接</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page 2: Make HTML -->
+    <div class="section" id="page2">
+      <div class="card flex-col">
+        <div class="grid">
+          <div>
+            <label>尺寸大小</label>
+            <input id="sizeInput" placeholder="例如：375x667，或 100% 宽度" />
+          </div>
+          <div>
+            <label>主题配色</label>
+            <input id="themeInput" placeholder="例如：深色科技蓝、莫兰迪" />
+          </div>
+          <div>
+            <label>主要功能</label>
+            <input id="featureInput" placeholder="例如：角色聊天、查看聊天记录、听歌记录" />
+          </div>
+          <div>
+            <label>形状大小</label>
+            <input id="shapeInput" placeholder="例如：圆形、正方形、长方形、心形" />
+          </div>
+          <div>
+            <label>风格</label>
+            <input id="styleInput" placeholder="例如：报纸风、杂志风、高级感" />
+          </div>
+          <div>
+            <label>其他要求</label>
+            <textarea id="otherInput" placeholder="补充配色、尺寸、形状、风格、功能等"></textarea>
+          </div>
+        </div>
+
+        <div class="flex-col">
+          <label>导入图片（可多选，用于给 AI 参考）</label>
+          <input id="imageInput" type="file" accept="image/*" multiple />
+          <div class="image-list" id="imageList"></div>
+        </div>
+
+        <div class="btn-row">
+          <button id="saveReqBtn">保存需求</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page 3: Generate & Preview -->
+    <div class="section" id="page3">
+      <div class="card flex-col">
+        <div class="panel">
+          <div class="flex-col">
+            <h3>生成区域</h3>
+            <div class="code-area" id="generatedCode" contenteditable="false" spellcheck="false"></div>
+            <div class="btn-row">
+              <button id="genBtn">生成</button>
+              <button class="ghost" id="editGenBtn">编辑</button>
+              <button class="ghost" id="modifyBtn">修改</button>
+              <button class="ghost" id="copyGenBtn">一键复制</button>
+              <button class="ghost" id="exportGenBtn">导出 TXT</button>
+              <button class="danger" id="clearGenBtn">一键清空</button>
+            </div>
+          </div>
+          <div class="flex-col">
+            <h3>预览区域</h3>
+            <iframe id="previewFrame" style="width:100%;min-height:300px;border:1px solid var(--border);border-radius: var(--radius);"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page 4: Preview Local -->
+    <div class="section" id="page4">
+      <div class="card flex-col">
+        <div class="panel">
+          <div class="flex-col">
+            <h3>代码显示区域</h3>
+            <div class="code-area" id="localCode" contenteditable="false" spellcheck="false"></div>
+            <div class="btn-row">
+              <button id="importLocalBtn">导入本地</button>
+              <input id="importLocalInput" type="file" accept=".txt,.html,.htm,.md" style="display:none" />
+              <button class="ghost" id="editLocalBtn">修改</button>
+              <button class="danger" id="deleteLocalBtn">删除</button>
+              <button class="ghost" id="copyLocalBtn">复制</button>
+              <button class="ghost" id="exportLocalBtn">导出</button>
+              <button class="secondary" id="previewLocalBtn">预览</button>
+            </div>
+          </div>
+          <div class="flex-col">
+            <h3>预览区域</h3>
+            <iframe id="localPreview" style="width:100%;min-height:300px;border:1px solid var(--border);border-radius: var(--radius);"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const qs = (s) => document.querySelector(s);
+    const qsa = (s) => Array.from(document.querySelectorAll(s));
+    const toastEl = qs('#toast');
+    const STORAGE = {
+      api: 'ai_html_api',
+      req: 'ai_html_req',
+      gen: 'ai_html_gen',
+      local: 'ai_html_local'
+    };
+
+    const state = {
+      images: []
+    };
+
+    function showToast(msg, dur = 2200) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), dur);
+    }
+
+    /* Tabs */
+    qsa('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        qsa('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.tab;
+        qsa('.section').forEach(sec => sec.classList.remove('active'));
+        qs('#' + target).classList.add('active');
+        if (target === 'page3') renderPreview();
+      });
+    });
+
+    /* Load saved data */
+    function loadApi() {
+      const data = JSON.parse(localStorage.getItem(STORAGE.api) || '{}');
+      qs('#apiUrl').value = data.url || '';
+      qs('#apiKey').value = data.key || '';
+      qs('#apiModel').value = data.model || '';
+      qs('#apiSysPrompt').value = data.sysPrompt || '';
+    }
+    function saveApi() {
+      const api = {
+        url: qs('#apiUrl').value.trim(),
+        key: qs('#apiKey').value.trim(),
+        model: qs('#apiModel').value.trim(),
+        sysPrompt: qs('#apiSysPrompt').value.trim()
+      };
+      localStorage.setItem(STORAGE.api, JSON.stringify(api));
+      showToast('API 设置已保存');
+    }
+    function loadReq() {
+      const data = JSON.parse(localStorage.getItem(STORAGE.req) || '{}');
+      qs('#sizeInput').value = data.size || '';
+      qs('#themeInput').value = data.theme || '';
+      qs('#featureInput').value = data.feature || '';
+      qs('#shapeInput').value = data.shape || '';
+      qs('#styleInput').value = data.style || '';
+      qs('#otherInput').value = data.other || '';
+      state.images = data.images || [];
+      renderImages();
+    }
+    function saveReq() {
+      const req = {
+        size: qs('#sizeInput').value.trim(),
+        theme: qs('#themeInput').value.trim(),
+        feature: qs('#featureInput').value.trim(),
+        shape: qs('#shapeInput').value.trim(),
+        style: qs('#styleInput').value.trim(),
+        other: qs('#otherInput').value.trim(),
+        images: state.images || []
+      };
+      localStorage.setItem(STORAGE.req, JSON.stringify(req));
+      showToast('需求已保存');
+    }
+
+    function loadGen() {
+      const code = localStorage.getItem(STORAGE.gen) || '';
+      qs('#generatedCode').textContent = code;
+      renderPreview();
+    }
+    function saveGen(code) {
+      localStorage.setItem(STORAGE.gen, code || '');
+      qs('#generatedCode').textContent = code || '';
+    }
+
+    function loadLocal() {
+      const code = localStorage.getItem(STORAGE.local) || '';
+      qs('#localCode').textContent = code;
+    }
+    function saveLocal(code) {
+      localStorage.setItem(STORAGE.local, code || '');
+      qs('#localCode').textContent = code || '';
+    }
+
+    /* Image upload */
+    qs('#imageInput').addEventListener('change', (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      const readers = files.map(file => new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ name: file.name, data: reader.result });
+        reader.readAsDataURL(file);
+      }));
+      Promise.all(readers).then(res => {
+        state.images = [...state.images, ...res];
+        renderImages();
+        saveReq();
+        e.target.value = '';
+      });
+    });
+
+    function renderImages() {
+      const list = qs('#imageList');
+      list.innerHTML = '';
+      state.images.forEach((img, idx) => {
+        const div = document.createElement('div');
+        div.className = 'image-item';
+        div.innerHTML = `
+          <img src="${img.data}" alt="${img.name}" />
+          <button aria-label="删除" data-idx="${idx}">×</button>
+        `;
+        div.querySelector('button').addEventListener('click', () => {
+          state.images.splice(idx, 1);
+          renderImages();
+          saveReq();
+        });
+        list.appendChild(div);
+      });
+    }
+
+    /* API Test */
+    async function testApi() {
+      const api = JSON.parse(localStorage.getItem(STORAGE.api) || '{}');
+      if (!api.url || !api.key || !api.model) {
+        showToast('请先填写并保存 API URL / Key / Model');
+        return;
+      }
+      showToast('测试中...');
+      try {
+        const res = await fetch(api.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + api.key
+          },
+          body: JSON.stringify({
+            model: api.model,
+            messages: [{ role: 'user', content: 'ping' }],
+            max_tokens: 10
+          })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        showToast('测试成功');
+      } catch (err) {
+        console.error(err);
+        showToast('测试失败：' + (err.message || 'error'));
+      }
+    }
+
+    /* Prompt builder */
+    function buildPrompt(req) {
+      const lines = [];
+      lines.push('请生成一个完整、可直接运行、移动端优先适配的 HTML 页面：');
+      if (req.size) lines.push('尺寸大小: ' + req.size);
+      if (req.theme) lines.push('主题配色: ' + req.theme);
+      if (req.feature) lines.push('主要功能: ' + req.feature);
+      if (req.shape) lines.push('形状大小: ' + req.shape);
+      if (req.style) lines.push('风格: ' + req.style);
+      if (req.other) lines.push('其他要求: ' + req.other);
+      if ((req.images || []).length) {
+        lines.push('参考图片（名称与Base64示意）：');
+        req.images.forEach((img, i) => lines.push(`图片${i+1}: ${img.name}`));
+        // 为防过长，不直接在提示里塞 dataURL，可在 content parts 传图
+      }
+      lines.push('请直接输出完整 HTML 代码，包含必要的 CSS/JS，并确保适配手机端。');
+      return lines.join('\\n');
+    }
+
+    /* Generate via API */
+    async function generateHtml() {
+      const api = JSON.parse(localStorage.getItem(STORAGE.api) || '{}');
+      const req = JSON.parse(localStorage.getItem(STORAGE.req) || '{}');
+      if (!api.url || !api.key || !api.model) {
+        showToast('请先配置 API (URL/Key/Model)');
+        return;
+      }
+      const prompt = buildPrompt(req);
+      showToast('生成中...');
+
+      const messages = [];
+      if (api.sysPrompt) messages.push({ role: 'system', content: api.sysPrompt });
+      const userContent = [{ type: 'text', text: prompt }];
+      // If API supports images in chat messages (vision), include them:
+      (req.images || []).forEach(img => {
+        userContent.push({
+          type: 'image_url',
+          image_url: { url: img.data, detail: 'auto' }
+        });
+      });
+      messages.push({ role: 'user', content: userContent });
+
+      try {
+        const res = await fetch(api.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + api.key
+          },
+          body: JSON.stringify({
+            model: api.model,
+            messages,
+            temperature: 0.6,
+            max_tokens: 4096
+          })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const choice = data.choices?.[0]?.message?.content || '';
+        if (!choice) throw new Error('无返回内容');
+        saveGen(choice);
+        renderPreview();
+        showToast('生成完成');
+      } catch (err) {
+        console.error(err);
+        showToast('生成失败：' + (err.message || 'error'));
+      }
+    }
+
+    function renderPreview() {
+      const code = qs('#generatedCode').textContent;
+      const frame = qs('#previewFrame');
+      frame.srcdoc = code || '<p style="padding:12px;color:#64748b;">暂无生成内容</p>';
+    }
+
+    /* Buttons - page3 */
+    qs('#genBtn').addEventListener('click', generateHtml);
+    qs('#modifyBtn').addEventListener('click', () => {
+      if (!qs('#generatedCode').textContent.trim()) {
+        showToast('暂无生成内容可修改');
+        return;
+      }
+      qs('#generatedCode').setAttribute('contenteditable', 'true');
+      qs('#generatedCode').focus();
+      showToast('已进入修改模式');
+    });
+    qs('#editGenBtn').addEventListener('click', () => {
+      const editable = qs('#generatedCode').getAttribute('contenteditable') === 'true';
+      qs('#generatedCode').setAttribute('contenteditable', editable ? 'false' : 'true');
+      showToast(editable ? '已锁定编辑' : '可编辑');
+      if (!editable) qs('#generatedCode').focus();
+      else { saveGen(qs('#generatedCode').textContent); renderPreview(); }
+    });
+    qs('#copyGenBtn').addEventListener('click', () => {
+      const code = qs('#generatedCode').textContent;
+      navigator.clipboard.writeText(code).then(() => showToast('已复制'));
+    });
+    qs('#exportGenBtn').addEventListener('click', () => {
+      const code = qs('#generatedCode').textContent;
+      const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'generated.html.txt'; a.click();
+      URL.revokeObjectURL(url);
+    });
+    qs('#clearGenBtn').addEventListener('click', () => {
+      saveGen('');
+      renderPreview();
+      showToast('已清空');
+    });
+
+    /* Page2 save */
+    qs('#saveReqBtn').addEventListener('click', saveReq);
+
+    /* Page1 save/test */
+    qs('#saveApiBtn').addEventListener('click', saveApi);
+    qs('#testApiBtn').addEventListener('click', testApi);
+
+    /* Page4 local file */
+    qs('#importLocalBtn').addEventListener('click', () => qs('#importLocalInput').click());
+    qs('#importLocalInput').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        saveLocal(reader.result || '');
+        showToast('导入完成');
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+    qs('#editLocalBtn').addEventListener('click', () => {
+      const editable = qs('#localCode').getAttribute('contenteditable') === 'true';
+      qs('#localCode').setAttribute('contenteditable', editable ? 'false' : 'true');
+      showToast(editable ? '已锁定编辑' : '可编辑');
+      if (editable) saveLocal(qs('#localCode').textContent);
+      else qs('#localCode').focus();
+    });
+    qs('#deleteLocalBtn').addEventListener('click', () => {
+      saveLocal('');
+      showToast('已删除');
+    });
+    qs('#copyLocalBtn').addEventListener('click', () => {
+      const code = qs('#localCode').textContent;
+      navigator.clipboard.writeText(code).then(() => showToast('已复制'));
+    });
+    qs('#exportLocalBtn').addEventListener('click', () => {
+      const code = qs('#localCode').textContent;
+      const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'local.html.txt'; a.click();
+      URL.revokeObjectURL(url);
+    });
+    qs('#previewLocalBtn').addEventListener('click', () => {
+      const code = qs('#localCode').textContent;
+      qs('#localPreview').srcdoc = code || '<p style="padding:12px;color:#64748b;">暂无内容</p>';
+    });
+
+    /* Init */
+    loadApi();
+    loadReq();
+    loadGen();
+    loadLocal();
+  </script>
+</body>
+</html>
