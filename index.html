@@ -89,7 +89,7 @@
       width: 100%; height: 260px; padding: 12px;
       font-family: "JetBrains Mono", "Cascadia Code", monospace;
       background: #0b1220; color: #e2e8f0; border-radius: var(--radius);
-      border: 1px solid #1f2937; resize: none; white-space: pre; overflow: auto;
+      border: 1px solid #1f2937; resize: none; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; overflow-x: hidden; overflow-y: auto;
     }
     .code-area[contenteditable="true"] { outline: 2px solid var(--primary); }
     .panel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -109,10 +109,27 @@
     .model-item {
       width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px;
       border: 1px solid var(--border); background: #f8fafc; cursor: pointer;
-      font-size: 14px;
+      font-size: 14px; color: var(--secondary);
     }
-    .model-item.selected { border-color: var(--primary); background: #eef2ff; color: var(--primary); }
+    .model-item.selected { border-color: var(--primary); background: #e0e7ff; color: var(--secondary); }
     .modal-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+    .fullscreen-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      display: none; align-items: center; justify-content: center; z-index: 3000; padding: 12px;
+    }
+    .fullscreen-overlay.show { display: flex; }
+    .fullscreen-inner {
+      width: 100%; max-width: 900px; height: 100%; max-height: 900px;
+      background: #0b1220; border-radius: 16px; border: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 8px; padding: 10px;
+    }
+    .fullscreen-inner iframe {
+      flex: 1; width: 100%; border: 1px solid var(--border); border-radius: var(--radius);
+      background: #fff;
+    }
+    .fullscreen-close {
+      align-self: flex-end; width: auto; padding: 8px 12px;
+    }
     @media (max-width: 768px) {
       .tabs { grid-template-columns: repeat(2, 1fr); }
       .panel { grid-template-columns: 1fr; }
@@ -175,10 +192,6 @@
           <button id="saveApiBtn">保存设置</button>
           <button class="secondary" id="testApiBtn">测试连接</button>
           <button class="ghost" id="fetchModelsBtn">拉取模型</button>
-        </div>
-        <div class="flex-col">
-          <label>可用模型（拉取后展示，点击可打开选择列表）</label>
-          <div class="code-area" id="modelList" style="min-height:120px;" contenteditable="false"></div>
         </div>
         <div class="note" style="background:#ecfeff;border-color:#a5f3fc;color:#0f172a;">
           已启用「唯一指定 HTML 架构库」约束：后续生成将锁定模板，只允许填充变量或新增变量，不改骨架。
@@ -256,6 +269,7 @@
           <div class="flex-col">
             <h3>预览区域</h3>
             <iframe id="previewFrame" style="width:100%;min-height:300px;border:1px solid var(--border);border-radius: var(--radius);"></iframe>
+            <button class="ghost" id="fullscreenBtn">全屏预览</button>
           </div>
         </div>
       </div>
@@ -297,6 +311,12 @@
         <button class="ghost" id="cancelModelBtn">取消</button>
         <button id="confirmModelBtn">确认选择</button>
       </div>
+    </div>
+  </div>
+  <div class="fullscreen-overlay" id="fullscreenOverlay" aria-hidden="true">
+    <div class="fullscreen-inner">
+      <button class="ghost fullscreen-close" id="closeFullscreenBtn">关闭全屏</button>
+      <iframe id="fullscreenFrame"></iframe>
     </div>
   </div>
 
@@ -365,10 +385,24 @@
       modal.setAttribute('aria-hidden', 'true');
     }
 
+    function normalizeChatUrl(urlStr) {
+      try {
+        const u = new URL(urlStr);
+        if (!/\/chat\/completions?$/i.test(u.pathname)) {
+          u.pathname = u.pathname.replace(/\/$/, '') + '/chat/completions';
+        }
+        return u.toString();
+      } catch (e) {
+        if (/\/chat\/completions?$/i.test(urlStr)) return urlStr;
+        return urlStr.replace(/\/$/, '') + '/chat/completions';
+      }
+    }
+
     /* Tabs */
     qsa('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         qsa('.tab').forEach(t => t.classList.remove('active'));
+        tab.addEventListener('click', () => {});
         tab.classList.add('active');
         const target = tab.dataset.tab;
         qsa('.section').forEach(sec => sec.classList.remove('active'));
@@ -592,9 +626,10 @@
         showToast('请先填写并保存 API URL / Key / Model');
         return;
       }
+      const chatUrl = normalizeChatUrl(api.url);
       showToast('测试中...');
       try {
-        const res = await fetch(api.url, {
+        const res = await fetch(chatUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + api.key },
           body: JSON.stringify({
@@ -641,7 +676,6 @@
         const ids = (data.data || []).map(m => m.id);
         state.models = ids;
         state.selectedModel = ids?.[0] || '';
-        qs('#modelList').textContent = (ids && ids.length) ? ids.join('\n') : '未返回可用模型';
         if (ids?.length) openModelModal(ids);
         showToast('模型已拉取');
       } catch (err) {
@@ -680,19 +714,25 @@
         return;
       }
       const prompt = buildPrompt(req);
+      const chatUrl = normalizeChatUrl(api.url);
       showToast('生成中...');
 
       const messages = [];
       const sysPrompt = (api.sysPrompt || DEFAULT_SYS_PROMPT).trim();
       if (sysPrompt) messages.push({ role: 'system', content: sysPrompt });
-      const userContent = [{ type: 'text', text: prompt }];
-      (req.images || []).forEach(img => {
-        userContent.push({ type: 'image_url', image_url: { url: img.data, detail: 'auto' } });
-      });
-      messages.push({ role: 'user', content: userContent });
+
+      if ((req.images || []).length === 0) {
+        messages.push({ role: 'user', content: prompt });
+      } else {
+        const userContent = [{ type: 'text', text: prompt }];
+        (req.images || []).forEach(img => {
+          userContent.push({ type: 'image_url', image_url: { url: img.data, detail: 'auto' } });
+        });
+        messages.push({ role: 'user', content: userContent });
+      }
 
       try {
-        const res = await fetch(api.url, {
+        const res = await fetch(chatUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + api.key },
           body: JSON.stringify({
@@ -726,9 +766,6 @@
 
     /* Buttons - page3 */
     qs('#genBtn').addEventListener('click', generateHtml);
-    qs('#modelList').addEventListener('click', () => {
-      if (state.models && state.models.length) openModelModal(state.models);
-    });
     qs('#modifyBtn').addEventListener('click', () => {
       if (!qs('#generatedCode').textContent.trim()) { showToast('暂无生成内容可修改'); return; }
       qs('#generatedCode').setAttribute('contenteditable', 'true');
@@ -758,6 +795,21 @@
       saveGen('');
       renderPreview();
       showToast('已清空');
+    });
+
+    /* Fullscreen preview */
+    const fullscreenOverlay = qs('#fullscreenOverlay');
+    const fullscreenFrame = qs('#fullscreenFrame');
+    qs('#fullscreenBtn').addEventListener('click', () => {
+      const code = qs('#generatedCode').textContent.trim();
+      fullscreenFrame.srcdoc = code || '<p style="padding:12px;color:#64748b;">暂无生成内容</p>';
+      fullscreenOverlay.classList.add('show');
+      fullscreenOverlay.setAttribute('aria-hidden', 'false');
+    });
+    qs('#closeFullscreenBtn').addEventListener('click', () => {
+      fullscreenOverlay.classList.remove('show');
+      fullscreenOverlay.setAttribute('aria-hidden', 'true');
+      fullscreenFrame.srcdoc = '';
     });
 
     /* Page2 save */
