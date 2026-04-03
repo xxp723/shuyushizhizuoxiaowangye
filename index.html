@@ -86,17 +86,38 @@
       border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 14px; line-height: 24px;
     }
     .code-area {
-      width: 100%; min-height: 240px; padding: 12px;
+      width: 100%; height: 260px; padding: 12px;
       font-family: "JetBrains Mono", "Cascadia Code", monospace;
       background: #0b1220; color: #e2e8f0; border-radius: var(--radius);
-      border: 1px solid #1f2937; resize: vertical; white-space: pre; overflow: auto;
+      border: 1px solid #1f2937; resize: none; white-space: pre; overflow: auto;
     }
     .code-area[contenteditable="true"] { outline: 2px solid var(--primary); }
     .panel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center; z-index: 2000;
+      padding: 16px;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 420px;
+      max-height: 80vh; overflow: hidden; border: 1px solid var(--border);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25); display: flex; flex-direction: column;
+    }
+    .modal-header { padding: 14px 16px; font-weight: 700; border-bottom: 1px solid var(--border); }
+    .modal-body { padding: 12px 16px; overflow: auto; display: grid; gap: 8px; }
+    .model-item {
+      width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: #f8fafc; cursor: pointer;
+      font-size: 14px;
+    }
+    .model-item.selected { border-color: var(--primary); background: #eef2ff; color: var(--primary); }
+    .modal-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
     @media (max-width: 768px) {
       .tabs { grid-template-columns: repeat(2, 1fr); }
       .panel { grid-template-columns: 1fr; }
       .btn-row button { flex: 1 1 calc(50% - 8px); min-width: 140px; }
+      .code-area { height: 220px; }
     }
     .badge {
       display: inline-flex; align-items: center; gap: 6px;
@@ -156,7 +177,7 @@
           <button class="ghost" id="fetchModelsBtn">拉取模型</button>
         </div>
         <div class="flex-col">
-          <label>可用模型（拉取后展示，可点击填充到 Model）</label>
+          <label>可用模型（拉取后展示，点击可打开选择列表）</label>
           <div class="code-area" id="modelList" style="min-height:120px;" contenteditable="false"></div>
         </div>
         <div class="note" style="background:#ecfeff;border-color:#a5f3fc;color:#0f172a;">
@@ -171,7 +192,7 @@
         <div class="grid">
           <div><label>尺寸大小</label><input id="sizeInput" placeholder="例如：375x667，或 100% 宽度" /></div>
           <div><label>主题配色</label><input id="themeInput" placeholder="例如：深色科技蓝、莫兰迪" /></div>
-          <div><label>主要功能</label><input id="featureInput" placeholder="例如：角色聊天、查看聊天记录、听歌记录" /></div>
+          <div><label>主要功能</label><textarea id="featureInput" rows="3" style="min-height:72px; overflow-y:auto;" placeholder="例如：角色聊天、查看聊天记录、听歌记录"></textarea></div>
           <div><label>形状大小</label><input id="shapeInput" placeholder="例如：圆形、正方形、长方形、心形" /></div>
           <div><label>风格</label><input id="styleInput" placeholder="例如：报纸风、杂志风、高级感" /></div>
           <div><label>其他要求</label><textarea id="otherInput" placeholder="补充配色、尺寸、形状、风格、功能等"></textarea></div>
@@ -268,6 +289,16 @@
   </div>
 
   <div class="toast" id="toast"></div>
+  <div class="modal-backdrop" id="modelModal" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-header">选择模型</div>
+      <div class="modal-body" id="modelModalBody"></div>
+      <div class="modal-footer">
+        <button class="ghost" id="cancelModelBtn">取消</button>
+        <button id="confirmModelBtn">确认选择</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const qs = (s) => document.querySelector(s);
@@ -279,10 +310,11 @@
       gen: 'ai_html_gen',
       local: 'ai_html_local'
     };
+    const DEFAULT_SYS_PROMPT = `你是一个帮助用户生成HTML的小助手，必须依据“制作HTML”页的指令生成完整HTML。遵守输出格式约束：1) 禁止使用任何Markdown代码块或\`\`\`；2) 直接输出以<!DOCTYPE html>开头、以</html>结尾的纯HTML字符串；3) 必须将所有代码压缩为单行输出，禁止换行或制表符；4) 严禁修改已内置的HTML/CSS架构、类名、隔离样式和翻盖/抽拉交互逻辑。可按需求引入新变量，但不得破坏架构。`;
 
     const TEMPLATE_HTML = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport"content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><style>:root{--v11-bg:{{scene_bg}};--v11-bag-main:{{bag_main_color}};--v11-bag-dark:{{bag_dark_color}};--v11-accent:{{accent_color}};--v11-text:{{text_color}};--v11-rad:{{radius_val}}}.v11-scope{all:initial;display:block;font-family:-apple-system,"SF Pro SC",sans-serif;background-color:var(--v11-bg);width:340px;margin:20px auto;padding:24px 16px;box-sizing:border-box;position:relative;border-radius:35px;overflow:hidden;z-index:1}.v11-scope *,.v11-scope *::before,.v11-scope *::after{box-sizing:inherit;-webkit-tap-highlight-color:transparent}.v11-header{text-align:center;margin-bottom:20px}.v11-header h2{margin:0;font-size:16px;color:var(--v11-text);letter-spacing:1px;font-weight:800;text-transform:uppercase}.v11-tag{display:inline-block;background:rgba(0,0,0,.06);color:var(--v11-text);opacity:.7;padding:2px 10px;border-radius:6px;font-size:9px;margin-top:5px}.v11-stage{position:relative;width:100%;height:480px;display:flex;justify-content:center;overflow:hidden;perspective:1200px}.v11-logic-gate{display:none!important}.v11-insert-container{position:absolute;bottom:-390px;width:250px;height:380px;z-index:5;transition:all .8s cubic-bezier(.19,1,.22,1);opacity:0}.v11-scroll-view{width:100%;height:100%;overflow-y:auto;padding:20px 10px 160px;display:flex;flex-direction:column;align-items:center;gap:20px;scrollbar-width:none}.v11-scroll-view::-webkit-scrollbar{display:none}.v11-polaroid{flex-shrink:0;width:155px;background:#fff;padding:10px 10px 30px;box-shadow:0 6px 15px rgba(0,0,0,.12);border:1px solid #eee;cursor:pointer;transform:rotate(var(--r,0deg));transition:.3s}.v11-photo{width:100%;height:110px;background:#f8f8f8;display:flex;align-items:center;justify-content:center;font-size:45px}.v11-p-label{font-family:monospace;font-size:10px;text-align:center;margin-top:10px;color:#888;text-transform:uppercase;border-top:1px dashed #eee;padding-top:6px}.v11-bag-container{position:absolute;bottom:10px;width:200px;height:145px;z-index:20;transform-style:preserve-3d}.v11-side-fold{position:absolute;top:0;left:5%;width:90%;height:0;background:var(--v11-bag-dark);opacity:0;transition:.7s;clip-path:polygon(10% 0%,90% 0%,100% 100%,0% 100%);z-index:19}.v11-bag-body{position:absolute;width:100%;height:100%;background:linear-gradient(135deg,var(--v11-bag-main),var(--v11-bag-dark));border:2px solid rgba(0,0,0,.2);border-radius:var(--v11-rad);box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:20;cursor:pointer}.v11-bag-lid{position:absolute;top:-3px;left:-3px;width:calc(100% + 6px);height:80px;background:var(--v11-bag-main);border:2px solidrgba(0,0,0,.2);border-radius:var(--v11-rad) var(--v11-rad) 6px 6px;transform-origin:top;transition:.7s cubic-bezier(.4,0,.2,1);z-index:30}.v11-part-strap{position:absolute;top:-5px;width:20px;height:calc(100% + 10px);background:rgba(0,0,0,.4);left:30px;display:none;box-shadow:2px 0 5px rgba(0,0,0,.2);border-radius:2px}.v11-part-strap-r{left:auto;right:30px}.v11-part-neon{position:absolute;top:15px;right:15px;width:10px;height:10px;background:var(--v11-accent);border-radius:50%;box-shadow:0 0 15px var(--v11-accent);display:none}.v11-part-jewel{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:22px;height:22px;background:radial-gradient(circle at 30% 30%,#fff,var(--v11-accent));border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,.2);display:none}.v11-lock{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);width:28px;height:26px;background:var(--v11-accent);border-radius:4px;z-index:31}.style-vintage .v11-part-strap{display:block}.style-cyber .v11-part-neon{display:block}.style-cyber .v11-bag-body{border-left:5px solid var(--v11-accent)}.style-elegant .v11-part-jewel{display:block}#bag_gate:checked~.v11-insert-container{bottom:100px;opacity:1;z-index:25}#bag_gate:checked+.v11-bag-container .v11-bag-lid{transform:rotateX(135deg);opacity:.9}#bag_gate:checked+.v11-bag-container .v11-side-fold{height:155px;top:-10px;opacity:.5}.v11-note{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);width:290px;background:#fff;padding:25px;border-radius:4px;z-index:10001;opacity:0;visibility:hidden;transition:.3s;border-top:15px solid var(--v11-accent);box-shadow:0 30px 80px rgba(0,0,0,.5)}.v11-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:10000;opacity:0;visibility:hidden;transition:.3s}.v11-logic-gate:checked+.v11-note,.v11-logic-gate:checked+.v11-note+.v11-overlay{opacity:1;visibility:visible}.v11-logic-gate:checked+.v11-note{transform:translate(-50%,-50%) scale(1)}.v11-footer{text-align:center;font-size:10px;color:#999;margin-top:25px;letter-spacing:1px}</style></head><body><div class="v11-scope"><div class="v11-header"><h2>{{persona_name}}'S BAG</h2><div class="v11-tag">{{bag_description}}</div></div><div class="v11-stage"><input type="checkbox"id="bag_gate"class="v11-logic-gate"><label for="bag_gate"class="v11-bag-container {{style_class}}"><div class="v11-side-fold"></div><div class="v11-bag-body"></div><div class="v11-part-strap"></div><div class="v11-part-strap v11-part-strap-r"></div><div class="v11-part-neon"></div><div class="v11-bag-lid"><div class="v11-lock"></div><div class="v11-part-jewel"></div></div></label><div class="v11-insert-container"><div class="v11-scroll-view"><label for="i1"class="v11-polaroid"style="--r:-2deg;"><div class="v11-photo">{{i1_emoji}}</div><div class="v11-p-label">{{i1_name}}</div></label></div></div><input type="checkbox"id="i1"class="v11-logic-gate"><div class="v11-note"><div style="font-size:15px;font-weight:700;color:var(--v11-bag-main)">{{i1_title}}</div><div style="font-size:13px;color:#555;margin-top:10px;line-height:1.6">{{i1_desc}}</div><label for="i1"style="display:block;margin-top:20px;text-align:center;font-size:11px;color:#999;cursor:pointer">[ BACK ]</label></div><label for="i1"class="v11-overlay"></label></div><div class="v11-footer">- {{char_evaluation}} -</div></div></body></html>`;
 
-    const state = { images: [] };
+    const state = { images: [], models: [], selectedModel: '' };
 
     const defaultVars = () => ({
       persona_name: '',
@@ -307,6 +339,32 @@
       setTimeout(() => toastEl.classList.remove('show'), dur);
     }
 
+    function openModelModal(models) {
+      const modal = qs('#modelModal');
+      const body = qs('#modelModalBody');
+      body.innerHTML = '';
+      models.forEach((id, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'model-item';
+        btn.textContent = id;
+        btn.dataset.idx = idx;
+        btn.addEventListener('click', () => {
+          qsa('.model-item').forEach(i => i.classList.remove('selected'));
+          btn.classList.add('selected');
+          state.selectedModel = id;
+        });
+        body.appendChild(btn);
+      });
+      modal.classList.add('show');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+    function closeModelModal() {
+      const modal = qs('#modelModal');
+      modal.classList.remove('show');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
     /* Tabs */
     qsa('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -325,7 +383,8 @@
       qs('#apiUrl').value = data.url || '';
       qs('#apiKey').value = data.key || '';
       qs('#apiModel').value = data.model || '';
-      qs('#apiSysPrompt').value = data.sysPrompt || '';
+      const sys = data.sysPrompt || DEFAULT_SYS_PROMPT;
+      qs('#apiSysPrompt').value = sys;
     }
     function saveApi() {
       const api = {
@@ -359,7 +418,8 @@
 
     function parseExtraVars(text) {
       if (!text) return {};
-      const t = text.trim();
+      const t = (typeof text === 'string') ? text.trim() : '';
+      if (!t) return {};
       try {
         const obj = JSON.parse(t);
         if (obj && typeof obj === 'object') return obj;
@@ -578,10 +638,12 @@
         });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        const ids = (data.data || []).map(m => m.id).join('\n');
-        qs('#modelList').textContent = ids || '未返回可用模型';
+        const ids = (data.data || []).map(m => m.id);
+        state.models = ids;
+        state.selectedModel = ids?.[0] || '';
+        qs('#modelList').textContent = (ids && ids.length) ? ids.join('\n') : '未返回可用模型';
+        if (ids?.length) openModelModal(ids);
         showToast('模型已拉取');
-        if (ids.split('\n')[0]) qs('#apiModel').value = ids.split('\n')[0];
       } catch (err) {
         console.error(err);
         showToast('拉取模型失败：' + (err.message || 'error'));
@@ -591,8 +653,9 @@
     /* Prompt builder */
     function buildPrompt(req) {
       const lines = [];
-      lines.push('你是前端模板变量填充助手。必须使用给定的唯一 HTML 模板骨架，不得改动结构、类名、层级和 CSS，仅可返回变量 JSON。');
-      lines.push('模板骨架占位符列表：persona_name, bag_description, scene_bg, bag_main_color, bag_dark_color, accent_color, text_color, radius_val, style_class, char_evaluation, i1_emoji, i1_name, i1_title, i1_desc，以及我声明的新增变量。');
+      lines.push('你是一个帮助用户生成HTML的小助手。根据“制作HTML”页的需求生成完整HTML。');
+      lines.push('输出格式必须遵守：1) 禁止任何代码块或```；2) 直接输出以<!DOCTYPE html>开头、以</html>结尾的纯HTML字符串；3) 必须单行压缩，无换行和制表符；4) 保持已内置的唯一模板架构（类名、CSS、翻盖/抽拉交互）不被改写。');
+      lines.push('可按需求自行引入新变量，但不要破坏现有架构。');
       lines.push('用户需求：');
       if (req.size) lines.push('尺寸大小: ' + req.size);
       if (req.theme) lines.push('主题配色: ' + req.theme);
@@ -604,16 +667,11 @@
         lines.push('参考图片（名称与Base64已附在消息的 image_url）：');
         req.images.forEach((img, i) => lines.push(`图片${i+1}: ${img.name}`));
       }
-      lines.push('如果用户已提供部分变量值，请保持并补全缺失项。可新增变量满足需求，但不要改写模板结构。');
-      lines.push('只输出 JSON 对象（不包含任何解释或代码块标记），键为变量名，值为字符串。');
+      lines.push('直接输出最终HTML，单行压缩，勿返回JSON。');
       return lines.join('\n');
     }
 
-    function mergeVars(userVars, extraVars, modelVars) {
-      return { ...userVars, ...extraVars, ...modelVars };
-    }
-
-    /* Generate via API */
+    /* Generate via API -> expects final single-line HTML */
     async function generateHtml() {
       const api = JSON.parse(localStorage.getItem(STORAGE.api) || '{}');
       const req = JSON.parse(localStorage.getItem(STORAGE.req) || '{}');
@@ -622,12 +680,11 @@
         return;
       }
       const prompt = buildPrompt(req);
-      const userVars = req.vars || {};
-      const extraVars = parseExtraVars(req.extraVarsRaw || {});
       showToast('生成中...');
 
       const messages = [];
-      if (api.sysPrompt) messages.push({ role: 'system', content: api.sysPrompt });
+      const sysPrompt = (api.sysPrompt || DEFAULT_SYS_PROMPT).trim();
+      if (sysPrompt) messages.push({ role: 'system', content: sysPrompt });
       const userContent = [{ type: 'text', text: prompt }];
       (req.images || []).forEach(img => {
         userContent.push({ type: 'image_url', image_url: { url: img.data, detail: 'auto' } });
@@ -647,17 +704,12 @@
         });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        const content = data.choices?.[0]?.message?.content || '';
+        let content = data.choices?.[0]?.message?.content || '';
         if (!content) throw new Error('无返回内容');
-        let modelVars = {};
-        try {
-          modelVars = JSON.parse(content);
-        } catch (e) {
-          modelVars = extractVarsFromText(content) || {};
-        }
-        const finalVars = mergeVars(userVars, extraVars, modelVars);
-        const finalHtml = applyTemplate(finalVars);
-        saveGen(finalHtml);
+        const extracted = extractCodeFromText(content);
+        if (extracted) content = extracted;
+        content = content.replace(/```/g, '').replace(/[\r\n]+/g, '').trim();
+        saveGen(content);
         renderPreview();
         showToast('生成完成');
       } catch (err) {
@@ -674,6 +726,9 @@
 
     /* Buttons - page3 */
     qs('#genBtn').addEventListener('click', generateHtml);
+    qs('#modelList').addEventListener('click', () => {
+      if (state.models && state.models.length) openModelModal(state.models);
+    });
     qs('#modifyBtn').addEventListener('click', () => {
       if (!qs('#generatedCode').textContent.trim()) { showToast('暂无生成内容可修改'); return; }
       qs('#generatedCode').setAttribute('contenteditable', 'true');
@@ -712,6 +767,19 @@
     qs('#saveApiBtn').addEventListener('click', saveApi);
     qs('#testApiBtn').addEventListener('click', testApi);
     qs('#fetchModelsBtn').addEventListener('click', fetchModels);
+
+    /* Model modal actions */
+    qs('#cancelModelBtn').addEventListener('click', closeModelModal);
+    qs('#confirmModelBtn').addEventListener('click', () => {
+      if (state.selectedModel) {
+        qs('#apiModel').value = state.selectedModel;
+        saveApi();
+        closeModelModal();
+        showToast('模型已选择并保存');
+      } else {
+        showToast('请先选择模型');
+      }
+    });
 
     /* Page4 local file */
     qs('#importLocalBtn').addEventListener('click', () => qs('#importLocalInput').click());
