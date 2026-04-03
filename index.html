@@ -319,6 +319,19 @@
       <iframe id="fullscreenFrame"></iframe>
     </div>
   </div>
+  <div class="modal-backdrop" id="renameModal" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-header">重命名导出文件</div>
+      <div class="modal-body">
+        <label>文件名（含扩展名）</label>
+        <input id="renameInput" value="generated.html.txt" />
+      </div>
+      <div class="modal-footer">
+        <button class="ghost" id="cancelRenameBtn">取消</button>
+        <button id="confirmRenameBtn">确认并下载</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const qs = (s) => document.querySelector(s);
@@ -330,11 +343,12 @@
       gen: 'ai_html_gen',
       local: 'ai_html_local'
     };
-    const DEFAULT_SYS_PROMPT = `你是一个帮助用户生成HTML的小助手，必须依据“制作HTML”页的指令生成完整HTML。遵守输出格式约束：1) 禁止使用任何Markdown代码块或\`\`\`；2) 直接输出以<!DOCTYPE html>开头、以</html>结尾的纯HTML字符串；3) 必须将所有代码压缩为单行输出，禁止换行或制表符；4) 严禁修改已内置的HTML/CSS架构、类名、隔离样式和翻盖/抽拉交互逻辑。可按需求引入新变量，但不得破坏架构。`;
+    const DEFAULT_SYS_PROMPT = `你是一个严格输出 HTML 的助手，必须满足：1) 只输出 HTML，禁止 JSON/Markdown/文本；2) 必须以 <!DOCTYPE html> 开头、以 </html> 结尾；3) 禁止前后多余字符；4) HTML 必须单行压缩，无换行/制表符；5) 保持内置模板架构，允许新增变量占位 {{var}} 但不得破坏结构；6) 生成前自我审查：a) 所有 label/for 和 input id 正确配对；b) 交互按钮/checkbox 可点击；c) 滚动区域有 overflow 以展示完整文本；d) 配色与圆角统一，美观；e) 文本容器宽度足够，变量能完整显示；f) 不输出脚本报错。审查通过后再输出最终 HTML。`;
 
     const TEMPLATE_HTML = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport"content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><style>:root{--v11-bg:{{scene_bg}};--v11-bag-main:{{bag_main_color}};--v11-bag-dark:{{bag_dark_color}};--v11-accent:{{accent_color}};--v11-text:{{text_color}};--v11-rad:{{radius_val}}}.v11-scope{all:initial;display:block;font-family:-apple-system,"SF Pro SC",sans-serif;background-color:var(--v11-bg);width:340px;margin:20px auto;padding:24px 16px;box-sizing:border-box;position:relative;border-radius:35px;overflow:hidden;z-index:1}.v11-scope *,.v11-scope *::before,.v11-scope *::after{box-sizing:inherit;-webkit-tap-highlight-color:transparent}.v11-header{text-align:center;margin-bottom:20px}.v11-header h2{margin:0;font-size:16px;color:var(--v11-text);letter-spacing:1px;font-weight:800;text-transform:uppercase}.v11-tag{display:inline-block;background:rgba(0,0,0,.06);color:var(--v11-text);opacity:.7;padding:2px 10px;border-radius:6px;font-size:9px;margin-top:5px}.v11-stage{position:relative;width:100%;height:480px;display:flex;justify-content:center;overflow:hidden;perspective:1200px}.v11-logic-gate{display:none!important}.v11-insert-container{position:absolute;bottom:-390px;width:250px;height:380px;z-index:5;transition:all .8s cubic-bezier(.19,1,.22,1);opacity:0}.v11-scroll-view{width:100%;height:100%;overflow-y:auto;padding:20px 10px 160px;display:flex;flex-direction:column;align-items:center;gap:20px;scrollbar-width:none}.v11-scroll-view::-webkit-scrollbar{display:none}.v11-polaroid{flex-shrink:0;width:155px;background:#fff;padding:10px 10px 30px;box-shadow:0 6px 15px rgba(0,0,0,.12);border:1px solid #eee;cursor:pointer;transform:rotate(var(--r,0deg));transition:.3s}.v11-photo{width:100%;height:110px;background:#f8f8f8;display:flex;align-items:center;justify-content:center;font-size:45px}.v11-p-label{font-family:monospace;font-size:10px;text-align:center;margin-top:10px;color:#888;text-transform:uppercase;border-top:1px dashed #eee;padding-top:6px}.v11-bag-container{position:absolute;bottom:10px;width:200px;height:145px;z-index:20;transform-style:preserve-3d}.v11-side-fold{position:absolute;top:0;left:5%;width:90%;height:0;background:var(--v11-bag-dark);opacity:0;transition:.7s;clip-path:polygon(10% 0%,90% 0%,100% 100%,0% 100%);z-index:19}.v11-bag-body{position:absolute;width:100%;height:100%;background:linear-gradient(135deg,var(--v11-bag-main),var(--v11-bag-dark));border:2px solid rgba(0,0,0,.2);border-radius:var(--v11-rad);box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:20;cursor:pointer}.v11-bag-lid{position:absolute;top:-3px;left:-3px;width:calc(100% + 6px);height:80px;background:var(--v11-bag-main);border:2px solidrgba(0,0,0,.2);border-radius:var(--v11-rad) var(--v11-rad) 6px 6px;transform-origin:top;transition:.7s cubic-bezier(.4,0,.2,1);z-index:30}.v11-part-strap{position:absolute;top:-5px;width:20px;height:calc(100% + 10px);background:rgba(0,0,0,.4);left:30px;display:none;box-shadow:2px 0 5px rgba(0,0,0,.2);border-radius:2px}.v11-part-strap-r{left:auto;right:30px}.v11-part-neon{position:absolute;top:15px;right:15px;width:10px;height:10px;background:var(--v11-accent);border-radius:50%;box-shadow:0 0 15px var(--v11-accent);display:none}.v11-part-jewel{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:22px;height:22px;background:radial-gradient(circle at 30% 30%,#fff,var(--v11-accent));border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,.2);display:none}.v11-lock{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);width:28px;height:26px;background:var(--v11-accent);border-radius:4px;z-index:31}.style-vintage .v11-part-strap{display:block}.style-cyber .v11-part-neon{display:block}.style-cyber .v11-bag-body{border-left:5px solid var(--v11-accent)}.style-elegant .v11-part-jewel{display:block}#bag_gate:checked~.v11-insert-container{bottom:100px;opacity:1;z-index:25}#bag_gate:checked+.v11-bag-container .v11-bag-lid{transform:rotateX(135deg);opacity:.9}#bag_gate:checked+.v11-bag-container .v11-side-fold{height:155px;top:-10px;opacity:.5}.v11-note{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);width:290px;background:#fff;padding:25px;border-radius:4px;z-index:10001;opacity:0;visibility:hidden;transition:.3s;border-top:15px solid var(--v11-accent);box-shadow:0 30px 80px rgba(0,0,0,.5)}.v11-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:10000;opacity:0;visibility:hidden;transition:.3s}.v11-logic-gate:checked+.v11-note,.v11-logic-gate:checked+.v11-note+.v11-overlay{opacity:1;visibility:visible}.v11-logic-gate:checked+.v11-note{transform:translate(-50%,-50%) scale(1)}.v11-footer{text-align:center;font-size:10px;color:#999;margin-top:25px;letter-spacing:1px}</style></head><body><div class="v11-scope"><div class="v11-header"><h2>{{persona_name}}'S BAG</h2><div class="v11-tag">{{bag_description}}</div></div><div class="v11-stage"><input type="checkbox"id="bag_gate"class="v11-logic-gate"><label for="bag_gate"class="v11-bag-container {{style_class}}"><div class="v11-side-fold"></div><div class="v11-bag-body"></div><div class="v11-part-strap"></div><div class="v11-part-strap v11-part-strap-r"></div><div class="v11-part-neon"></div><div class="v11-bag-lid"><div class="v11-lock"></div><div class="v11-part-jewel"></div></div></label><div class="v11-insert-container"><div class="v11-scroll-view"><label for="i1"class="v11-polaroid"style="--r:-2deg;"><div class="v11-photo">{{i1_emoji}}</div><div class="v11-p-label">{{i1_name}}</div></label></div></div><input type="checkbox"id="i1"class="v11-logic-gate"><div class="v11-note"><div style="font-size:15px;font-weight:700;color:var(--v11-bag-main)">{{i1_title}}</div><div style="font-size:13px;color:#555;margin-top:10px;line-height:1.6">{{i1_desc}}</div><label for="i1"style="display:block;margin-top:20px;text-align:center;font-size:11px;color:#999;cursor:pointer">[ BACK ]</label></div><label for="i1"class="v11-overlay"></label></div><div class="v11-footer">- {{char_evaluation}} -</div></div></body></html>`;
 
     const state = { images: [], models: [], selectedModel: '' };
+    let pendingDownload = null;
 
     const defaultVars = () => ({
       persona_name: '',
@@ -402,7 +416,6 @@
     qsa('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         qsa('.tab').forEach(t => t.classList.remove('active'));
-        tab.addEventListener('click', () => {});
         tab.classList.add('active');
         const target = tab.dataset.tab;
         qsa('.section').forEach(sec => sec.classList.remove('active'));
@@ -448,6 +461,24 @@
       vars.i1_title = qs('#var_i1_title').value.trim();
       vars.i1_desc = qs('#var_i1_desc').value.trim();
       return vars;
+    }
+
+    function fillVars(vars) {
+      if (!vars) return;
+      if (vars.persona_name !== undefined) qs('#var_persona_name').value = vars.persona_name;
+      if (vars.bag_description !== undefined) qs('#var_bag_description').value = vars.bag_description;
+      if (vars.scene_bg !== undefined) qs('#var_scene_bg').value = vars.scene_bg;
+      if (vars.bag_main_color !== undefined) qs('#var_bag_main_color').value = vars.bag_main_color;
+      if (vars.bag_dark_color !== undefined) qs('#var_bag_dark_color').value = vars.bag_dark_color;
+      if (vars.accent_color !== undefined) qs('#var_accent_color').value = vars.accent_color;
+      if (vars.text_color !== undefined) qs('#var_text_color').value = vars.text_color;
+      if (vars.radius_val !== undefined) qs('#var_radius_val').value = vars.radius_val;
+      if (vars.style_class !== undefined) qs('#var_style_class').value = vars.style_class;
+      if (vars.char_evaluation !== undefined) qs('#var_char_evaluation').value = vars.char_evaluation;
+      if (vars.i1_emoji !== undefined) qs('#var_i1_emoji').value = vars.i1_emoji;
+      if (vars.i1_name !== undefined) qs('#var_i1_name').value = vars.i1_name;
+      if (vars.i1_title !== undefined) qs('#var_i1_title').value = vars.i1_title;
+      if (vars.i1_desc !== undefined) qs('#var_i1_desc').value = vars.i1_desc;
     }
 
     function parseExtraVars(text) {
@@ -516,6 +547,7 @@
       };
       localStorage.setItem(STORAGE.req, JSON.stringify(req));
       showToast('需求与变量已保存');
+      autoFillVars();
     }
 
     function loadGen() {
@@ -560,11 +592,14 @@
 
     function extractCodeFromText(text) {
       if (!text) return '';
-      const triple = /```[a-zA-Z]*\s*([\s\S]*?)```/m.exec(text);
-      if (triple && triple[1]) return triple[1].trim();
-      const htmlBlock = /(<html[\s\S]*<\/html>)/im.exec(text);
-      if (htmlBlock && htmlBlock[1]) return htmlBlock[1].trim();
-      return text.trim();
+      const htmlDoctype = /<!doctype html[\s\S]*<\/html>/im.exec(text);
+      if (htmlDoctype && htmlDoctype[0]) return htmlDoctype[0].trim();
+      const htmlBlock = /<html[\s\S]*<\/html>/im.exec(text);
+      if (htmlBlock && htmlBlock[0]) {
+        const snippet = htmlBlock[0].trim();
+        return snippet.startsWith('<!DOCTYPE html>') ? snippet : '<!DOCTYPE html>' + snippet;
+      }
+      return '';
     }
 
     function extractVarsFromText(text) {
@@ -617,6 +652,70 @@
         });
         list.appendChild(div);
       });
+    }
+
+    /* Auto fill vars */
+    function heuristicFill(req) {
+      const vars = {};
+      if (!qs('#var_persona_name').value && req?.theme) vars.persona_name = req.theme;
+      fillVars(vars);
+      if (Object.keys(vars).length) showToast('已基于本地信息初步填充变量，可手动调整');
+    }
+
+    async function autoFillVars() {
+      const api = JSON.parse(localStorage.getItem(STORAGE.api) || '{}');
+      const req = JSON.parse(localStorage.getItem(STORAGE.req) || '{}');
+      if (!api.url || !api.key || !api.model) {
+        heuristicFill(req);
+        return;
+      }
+      const chatUrl = normalizeChatUrl(api.url);
+      const prompt = `
+你是变量提取助手。请读取以下用户输入字段与图片文件名，输出 JSON 对象填充模板变量：
+已知字段：
+尺寸:${req.size||''}
+主题:${req.theme||''}
+功能:${req.feature||''}
+形状:${req.shape||''}
+风格:${req.style||''}
+其他:${req.other||''}
+模板变量键: persona_name, bag_description, scene_bg, bag_main_color, bag_dark_color, accent_color, text_color, radius_val, style_class, char_evaluation, i1_emoji, i1_name, i1_title, i1_desc
+允许新增变量: 用户提到的新需求（例如 char_chat_history, music_records 等），用合适的 key 命名并给出字符串内容。
+图片文件名:${(req.images||[]).map(i=>i.name).join(',')}
+
+仅输出 JSON，对应 key=>value。示例：
+{"persona_name":"夏鸣星","i1_desc":"查看聊天记录","char_chat_history":"..."}
+      `.trim();
+
+      const messages = [{ role: 'user', content: prompt }];
+      try {
+        const res = await fetch(chatUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + api.key },
+          body: JSON.stringify({
+            model: api.model,
+            messages,
+            temperature: 0.2,
+            max_tokens: 512,
+            response_format: { type: 'json_object' }
+          })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const text = data.choices?.[0]?.message?.content || '';
+        const vars = extractVarsFromText(text);
+        if (vars && typeof vars === 'object') {
+          fillVars(vars);
+          if (vars.extraVarsRaw) qs('#var_extra').value = vars.extraVarsRaw;
+          showToast('已自动解析并填充变量，可再手动调整');
+          saveReq();
+        } else {
+          heuristicFill(req);
+        }
+      } catch (err) {
+        console.error(err);
+        heuristicFill(req);
+      }
     }
 
     /* API Test */
@@ -688,8 +787,8 @@
     function buildPrompt(req) {
       const lines = [];
       lines.push('你是一个帮助用户生成HTML的小助手。根据“制作HTML”页的需求生成完整HTML。');
-      lines.push('输出格式必须遵守：1) 禁止任何代码块或```；2) 直接输出以<!DOCTYPE html>开头、以</html>结尾的纯HTML字符串；3) 必须单行压缩，无换行和制表符；4) 保持已内置的唯一模板架构（类名、CSS、翻盖/抽拉交互）不被改写。');
-      lines.push('可按需求自行引入新变量，但不要破坏现有架构。');
+      lines.push('输出格式必须遵守：1) 禁止任何代码块或```；2) 必须以 <!DOCTYPE html> 开头、以 </html> 结尾；3) 直接输出纯HTML字符串；4) 必须单行压缩，无换行和制表符；5) 保持内置的唯一模板架构（类名、CSS、翻盖/抽拉交互）不被改写；6) 允许新增变量，占位写成 {{var}} 并在页面中有显示容器。');
+      lines.push('生成前执行自检：label/for 配对，按钮/checkbox 可点击，滚动区域 overflow 可用，文本容器可完整显示变量，配色圆角统一，美观，无脚本报错。');
       lines.push('用户需求：');
       if (req.size) lines.push('尺寸大小: ' + req.size);
       if (req.theme) lines.push('主题配色: ' + req.theme);
@@ -747,8 +846,11 @@
         let content = data.choices?.[0]?.message?.content || '';
         if (!content) throw new Error('无返回内容');
         const extracted = extractCodeFromText(content);
-        if (extracted) content = extracted;
-        content = content.replace(/```/g, '').replace(/[\r\n]+/g, '').trim();
+        if (!extracted) throw new Error('未检测到 <!DOCTYPE html> 开头的有效 HTML');
+        content = extracted.replace(/[\r\n]+/g, '').trim();
+        if (!/^<!doctype html/i.test(content) || !content.endsWith('</html>')) {
+          throw new Error('返回内容未严格以 <!DOCTYPE html> 开头且以 </html> 结尾');
+        }
         saveGen(content);
         renderPreview();
         showToast('生成完成');
@@ -783,14 +885,45 @@
       const code = qs('#generatedCode').textContent;
       navigator.clipboard.writeText(code).then(() => showToast('已复制'));
     });
-    qs('#exportGenBtn').addEventListener('click', () => {
-      const code = qs('#generatedCode').textContent;
-      const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+
+    function openRenameModal(content, defaultName, source) {
+      pendingDownload = { content, defaultName, source };
+      qs('#renameInput').value = defaultName || 'export.txt';
+      qs('#renameModal').classList.add('show');
+      qs('#renameModal').setAttribute('aria-hidden', 'false');
+      setTimeout(() => qs('#renameInput').focus(), 50);
+    }
+    function closeRenameModal() {
+      qs('#renameModal').classList.remove('show');
+      qs('#renameModal').setAttribute('aria-hidden', 'true');
+      pendingDownload = null;
+    }
+    function performDownload(name, content) {
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'generated.html.txt'; a.click();
+      a.href = url; a.download = name || 'export.txt'; a.click();
       URL.revokeObjectURL(url);
+    }
+
+    qs('#confirmRenameBtn').addEventListener('click', () => {
+      if (!pendingDownload) { closeRenameModal(); return; }
+      const name = qs('#renameInput').value.trim() || pendingDownload.defaultName || 'export.txt';
+      performDownload(name, pendingDownload.content);
+      showToast('已导出：' + name);
+      closeRenameModal();
     });
+    qs('#cancelRenameBtn').addEventListener('click', closeRenameModal);
+
+    qs('#exportGenBtn').addEventListener('click', () => {
+      const code = qs('#generatedCode').textContent;
+      openRenameModal(code, 'generated.html.txt', 'gen');
+    });
+    qs('#exportLocalBtn').addEventListener('click', () => {
+      const code = qs('#localCode').textContent;
+      openRenameModal(code, 'local.html.txt', 'local');
+    });
+
     qs('#clearGenBtn').addEventListener('click', () => {
       saveGen('');
       renderPreview();
@@ -869,14 +1002,6 @@
     qs('#copyLocalBtn').addEventListener('click', () => {
       const code = qs('#localCode').textContent;
       navigator.clipboard.writeText(code).then(() => showToast('已复制'));
-    });
-    qs('#exportLocalBtn').addEventListener('click', () => {
-      const code = qs('#localCode').textContent;
-      const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'local.html.txt'; a.click();
-      URL.revokeObjectURL(url);
     });
     qs('#previewLocalBtn').addEventListener('click', () => {
       const code = qs('#localCode').textContent;
