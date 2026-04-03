@@ -188,6 +188,28 @@
           </div>
         </div>
 
+        <div class="flex-col" style="gap:6px;">
+          <div class="flex" style="gap:8px;flex-wrap:wrap;align-items:center;">
+            <input id="apiPresetName" placeholder="预设名称" style="flex:1 1 160px;" />
+            <select id="apiPresetSelect" style="flex:1 1 180px;">
+              <option value="">选择预设...</option>
+            </select>
+            <button class="ghost" id="saveApiPresetBtn">保存预设</button>
+            <button class="ghost" id="loadApiPresetBtn">加载</button>
+            <button class="ghost danger" id="deleteApiPresetBtn">删除</button>
+          </div>
+          <div class="flex" style="gap:8px;flex-wrap:wrap;align-items:center;">
+            <input id="sysPresetName" placeholder="提示词预设名称" style="flex:1 1 160px;" />
+            <select id="sysPresetSelect" style="flex:1 1 180px;">
+              <option value="">选择提示词...</option>
+            </select>
+            <button class="ghost" id="saveSysPresetBtn">保存提示词</button>
+            <button class="ghost" id="loadSysPresetBtn">预设</button>
+            <button class="ghost danger" id="deleteSysPresetBtn">删除</button>
+          </div>
+          <div class="muted">预设仅存储在本地浏览器，可快速切换 API 设置与系统提示词。</div>
+        </div>
+
         <div class="btn-row">
           <button id="saveApiBtn">保存设置</button>
           <button class="secondary" id="testApiBtn">测试连接</button>
@@ -341,7 +363,9 @@
       api: 'ai_html_api',
       req: 'ai_html_req',
       gen: 'ai_html_gen',
-      local: 'ai_html_local'
+      local: 'ai_html_local',
+      apiPresets: 'ai_html_api_presets',
+      sysPresets: 'ai_html_sys_presets'
     };
     const DEFAULT_SYS_PROMPT = `你是一个严格输出 HTML 的助手，必须满足：1) 只输出 HTML，禁止 JSON/Markdown/文本；2) 必须以 <!DOCTYPE html> 开头、以 </html> 结尾；3) 禁止前后多余字符；4) HTML 必须单行压缩，无换行/制表符；5) 保持内置模板架构，允许新增变量占位 {{var}} 但不得破坏结构；6) 生成前自我审查：a) 所有 label/for 和 input id 正确配对；b) 交互按钮/checkbox 可点击；c) 滚动区域有 overflow 以展示完整文本；d) 配色与圆角统一，美观；e) 文本容器宽度足够，变量能完整显示；f) 不输出脚本报错。审查通过后再输出最终 HTML。`;
 
@@ -366,6 +390,101 @@
       i1_title: '',
       i1_desc: ''
     });
+
+    const getApiPresets = () => JSON.parse(localStorage.getItem(STORAGE.apiPresets) || '[]');
+    const setApiPresets = (list = []) => localStorage.setItem(STORAGE.apiPresets, JSON.stringify(list));
+    const getSysPresets = () => JSON.parse(localStorage.getItem(STORAGE.sysPresets) || '[]');
+    const setSysPresets = (list = []) => localStorage.setItem(STORAGE.sysPresets, JSON.stringify(list));
+
+    function refreshApiPresetSelect() {
+      const sel = qs('#apiPresetSelect');
+      if (!sel) return;
+      const list = getApiPresets();
+      sel.innerHTML = '<option value="">选择预设...</option>';
+      list.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.name;
+        opt.textContent = p.name;
+        sel.appendChild(opt);
+      });
+    }
+    function refreshSysPresetSelect() {
+      const sel = qs('#sysPresetSelect');
+      if (!sel) return;
+      const list = getSysPresets();
+      sel.innerHTML = '<option value="">选择提示词...</option>';
+      list.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.name;
+        opt.textContent = p.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    function saveApiPreset() {
+      const name = qs('#apiPresetName').value.trim();
+      if (!name) { showToast('请输入预设名称'); return; }
+      const preset = {
+        name,
+        url: qs('#apiUrl').value.trim(),
+        key: qs('#apiKey').value.trim(),
+        model: qs('#apiModel').value.trim(),
+        sysPrompt: qs('#apiSysPrompt').value.trim()
+      };
+      const list = getApiPresets().filter(p => p.name !== name);
+      list.push(preset);
+      setApiPresets(list);
+      refreshApiPresetSelect();
+      showToast('API 预设已保存');
+    }
+    function loadApiPreset() {
+      const name = qs('#apiPresetSelect').value.trim() || qs('#apiPresetName').value.trim();
+      if (!name) { showToast('请选择预设'); return; }
+      const preset = getApiPresets().find(p => p.name === name);
+      if (!preset) { showToast('未找到预设'); return; }
+      qs('#apiUrl').value = preset.url || '';
+      qs('#apiKey').value = preset.key || '';
+      qs('#apiModel').value = preset.model || '';
+      qs('#apiSysPrompt').value = preset.sysPrompt || DEFAULT_SYS_PROMPT;
+      saveApi();
+      showToast('API 预设已加载');
+    }
+    function deleteApiPreset() {
+      const name = qs('#apiPresetSelect').value.trim() || qs('#apiPresetName').value.trim();
+      if (!name) { showToast('请选择要删除的预设'); return; }
+      const list = getApiPresets().filter(p => p.name !== name);
+      setApiPresets(list);
+      refreshApiPresetSelect();
+      showToast('预设已删除');
+    }
+
+    function saveSysPreset() {
+      const name = qs('#sysPresetName').value.trim();
+      if (!name) { showToast('请输入提示词预设名称'); return; }
+      const preset = { name, content: qs('#apiSysPrompt').value.trim() };
+      const list = getSysPresets().filter(p => p.name !== name);
+      list.push(preset);
+      setSysPresets(list);
+      refreshSysPresetSelect();
+      showToast('系统提示词预设已保存');
+    }
+    function loadSysPreset() {
+      const name = qs('#sysPresetSelect').value.trim() || qs('#sysPresetName').value.trim();
+      if (!name) { showToast('请选择提示词预设'); return; }
+      const preset = getSysPresets().find(p => p.name === name);
+      if (!preset) { showToast('未找到提示词预设'); return; }
+      qs('#apiSysPrompt').value = preset.content || '';
+      saveApi();
+      showToast('系统提示词预设已应用');
+    }
+    function deleteSysPreset() {
+      const name = qs('#sysPresetSelect').value.trim() || qs('#sysPresetName').value.trim();
+      if (!name) { showToast('请选择要删除的提示词预设'); return; }
+      const list = getSysPresets().filter(p => p.name !== name);
+      setSysPresets(list);
+      refreshSysPresetSelect();
+      showToast('提示词预设已删除');
+    }
 
     function showToast(msg, dur = 2200) {
       toastEl.textContent = msg;
@@ -952,6 +1071,12 @@
     qs('#saveApiBtn').addEventListener('click', saveApi);
     qs('#testApiBtn').addEventListener('click', testApi);
     qs('#fetchModelsBtn').addEventListener('click', fetchModels);
+    qs('#saveApiPresetBtn').addEventListener('click', saveApiPreset);
+    qs('#loadApiPresetBtn').addEventListener('click', loadApiPreset);
+    qs('#deleteApiPresetBtn').addEventListener('click', deleteApiPreset);
+    qs('#saveSysPresetBtn').addEventListener('click', saveSysPreset);
+    qs('#loadSysPresetBtn').addEventListener('click', loadSysPreset);
+    qs('#deleteSysPresetBtn').addEventListener('click', deleteSysPreset);
 
     /* Model modal actions */
     qs('#cancelModelBtn').addEventListener('click', closeModelModal);
@@ -1022,6 +1147,8 @@
     loadReq();
     loadGen();
     loadLocal();
+    refreshApiPresetSelect();
+    refreshSysPresetSelect();
   </script>
 </body>
 </html>
