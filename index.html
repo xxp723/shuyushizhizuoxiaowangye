@@ -147,6 +147,12 @@
     .tag {
       display: inline-block; padding: 4px 8px; border-radius: 8px; background: #e2e8f0; color: #475569; font-size: 12px;
     }
+    details.collapsible { border: none; padding: 0; }
+    details.collapsible summary {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; list-style: none; cursor: pointer; user-select: none;
+    }
+    details.collapsible summary::-webkit-details-marker { display: none; }
+    details.collapsible summary button { margin-left: auto; }
   </style>
 </head>
 <body>
@@ -183,8 +189,15 @@
             <input id="apiModel" placeholder="例如：gpt-4o-mini / gpt-3.5-turbo" />
           </div>
           <div>
-            <label>系统提示词（可选）</label>
+            <div class="flex" style="align-items:center;gap:8px;justify-content:space-between;">
+              <label>系统提示词（可选）</label>
+              <button type="button" class="ghost" id="sysPresetQuickBtn" style="flex:0 0 auto;width:auto;padding:6px 10px;">预设</button>
+            </div>
             <textarea id="apiSysPrompt" placeholder="为模型设置系统角色或生成约束"></textarea>
+          </div>
+          <div>
+            <label>顶部提示词（首段发送）</label>
+            <textarea id="apiTopPrompt" placeholder="最优先传递的提示词，始终放在消息顶部"></textarea>
           </div>
         </div>
 
@@ -240,30 +253,35 @@
         </div>
 
         <div class="card flex-col" style="background:#f8fafc;border-style:dashed;">
-          <div class="flex" style="flex-wrap:wrap;gap:8px;">
-            <span class="tag">模板变量</span>
-            <span class="muted">这些变量将直接填充到唯一模板中，可留空由 AI 生成。</span>
-          </div>
-          <div class="grid">
-            <div><label>persona_name</label><input id="var_persona_name" /></div>
-            <div><label>bag_description</label><input id="var_bag_description" /></div>
-            <div><label>scene_bg</label><input id="var_scene_bg" placeholder="背景色，如 #f6f6f6" /></div>
-            <div><label>bag_main_color</label><input id="var_bag_main_color" placeholder="包包主色" /></div>
-            <div><label>bag_dark_color</label><input id="var_bag_dark_color" placeholder="包包深色" /></div>
-            <div><label>accent_color</label><input id="var_accent_color" placeholder="强调色" /></div>
-            <div><label>text_color</label><input id="var_text_color" placeholder="文字颜色" /></div>
-            <div><label>radius_val</label><input id="var_radius_val" placeholder="例如 18px" /></div>
-            <div><label>style_class</label><input id="var_style_class" placeholder="例如 style-cyber / style-vintage / style-elegant" /></div>
-            <div><label>char_evaluation</label><input id="var_char_evaluation" /></div>
-            <div><label>i1_emoji</label><input id="var_i1_emoji" placeholder="📸 等" /></div>
-            <div><label>i1_name</label><input id="var_i1_name" /></div>
-            <div><label>i1_title</label><input id="var_i1_title" /></div>
-            <div><label>i1_desc</label><textarea id="var_i1_desc"></textarea></div>
-          </div>
-          <div class="flex-col">
-            <label>新增变量（可选，按行填写 key=value，或 JSON 对象）</label>
-            <textarea id="var_extra" placeholder="例如：&#10;i2_name=Second Card&#10;i2_desc=更多描述&#10;或直接粘贴 JSON 对象"></textarea>
-          </div>
+          <details id="tplVarsPanel" class="collapsible">
+            <summary>
+              <div class="flex" style="flex-wrap:wrap;gap:8px;align-items:center;">
+                <span class="tag">模板变量</span>
+                <span class="muted">这些变量将直接填充到唯一模板中，可留空由 AI 生成。</span>
+              </div>
+              <button type="button" class="ghost" id="autoFillVarsBtn" style="flex:0 0 auto;padding:6px 10px;min-width:auto;width:auto;">⭐</button>
+            </summary>
+            <div class="grid">
+              <div><label>persona_name</label><input id="var_persona_name" /></div>
+              <div><label>bag_description</label><input id="var_bag_description" /></div>
+              <div><label>scene_bg</label><input id="var_scene_bg" placeholder="背景色，如 #f6f6f6" /></div>
+              <div><label>bag_main_color</label><input id="var_bag_main_color" placeholder="包包主色" /></div>
+              <div><label>bag_dark_color</label><input id="var_bag_dark_color" placeholder "包包深色" /></div>
+              <div><label>accent_color</label><input id="var_accent_color" placeholder="强调色" /></div>
+              <div><label>text_color</label><input id="var_text_color" placeholder="文字颜色" /></div>
+              <div><label>radius_val</label><input id="var_radius_val" placeholder="例如 18px" /></div>
+              <div><label>style_class</label><input id="var_style_class" placeholder="例如 style-cyber / style-vintage / style-elegant" /></div>
+              <div><label>char_evaluation</label><input id="var_char_evaluation" /></div>
+              <div><label>i1_emoji</label><input id="var_i1_emoji" placeholder="📸 等" /></div>
+              <div><label>i1_name</label><input id="var_i1_name" /></div>
+              <div><label>i1_title</label><input id="var_i1_title" /></div>
+              <div><label>i1_desc</label><textarea id="var_i1_desc"></textarea></div>
+            </div>
+            <div class="flex-col">
+              <label>新增变量（可选，按行填写 key=value，或 JSON 对象）</label>
+              <textarea id="var_extra" placeholder="例如：&#10;i2_name=Second Card&#10;i2_desc=更多描述&#10;或直接粘贴 JSON 对象"></textarea>
+            </div>
+          </details>
         </div>
 
         <div class="btn-row">
@@ -437,10 +455,10 @@
       refreshApiPresetSelect();
       showToast('API 预设已保存');
     }
-    function loadApiPreset() {
-      const name = qs('#apiPresetSelect').value.trim() || qs('#apiPresetName').value.trim();
-      if (!name) { showToast('请选择预设'); return; }
-      const preset = getApiPresets().find(p => p.name === name);
+    function loadApiPreset(name) {
+      const presetName = (name || '').trim() || qs('#apiPresetSelect').value.trim() || qs('#apiPresetName').value.trim();
+      if (!presetName) { showToast('请选择预设'); return; }
+      const preset = getApiPresets().find(p => p.name === presetName);
       if (!preset) { showToast('未找到预设'); return; }
       qs('#apiUrl').value = preset.url || '';
       qs('#apiKey').value = preset.key || '';
@@ -468,10 +486,10 @@
       refreshSysPresetSelect();
       showToast('系统提示词预设已保存');
     }
-    function loadSysPreset() {
-      const name = qs('#sysPresetSelect').value.trim() || qs('#sysPresetName').value.trim();
-      if (!name) { showToast('请选择提示词预设'); return; }
-      const preset = getSysPresets().find(p => p.name === name);
+    function loadSysPreset(name) {
+      const presetName = (name || '').trim() || qs('#sysPresetSelect').value.trim() || qs('#sysPresetName').value.trim();
+      if (!presetName) { showToast('请选择提示词预设'); return; }
+      const preset = getSysPresets().find(p => p.name === presetName);
       if (!preset) { showToast('未找到提示词预设'); return; }
       qs('#apiSysPrompt').value = preset.content || '';
       saveApi();
@@ -1077,6 +1095,31 @@
     qs('#saveSysPresetBtn').addEventListener('click', saveSysPreset);
     qs('#loadSysPresetBtn').addEventListener('click', loadSysPreset);
     qs('#deleteSysPresetBtn').addEventListener('click', deleteSysPreset);
+    qs('#apiPresetSelect').addEventListener('change', () => {
+      const name = qs('#apiPresetSelect').value.trim();
+      if (name) {
+        qs('#apiPresetName').value = name;
+        loadApiPreset(name);
+      }
+    });
+    qs('#sysPresetSelect').addEventListener('change', () => {
+      const name = qs('#sysPresetSelect').value.trim();
+      if (name) {
+        qs('#sysPresetName').value = name;
+        loadSysPreset(name);
+      }
+    });
+    const sysPresetQuickBtn = qs('#sysPresetQuickBtn');
+    if (sysPresetQuickBtn) {
+      sysPresetQuickBtn.addEventListener('click', () => {
+        const name = qs('#sysPresetSelect').value.trim() || qs('#sysPresetName').value.trim();
+        if (name) {
+          loadSysPreset(name);
+        } else {
+          showToast('请选择提示词预设');
+        }
+      });
+    }
 
     /* Model modal actions */
     qs('#cancelModelBtn').addEventListener('click', closeModelModal);
