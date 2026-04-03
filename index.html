@@ -25,199 +25,89 @@
     }
     h1, h2, h3 { margin: 0; }
     a { color: var(--primary); }
-    .app {
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-    .header {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
+    .app { max-width: 1080px; margin: 0 auto; padding: 16px; }
+    .header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
     .header h1 { font-size: 20px; }
     .tabs {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--bg);
-      padding: 4px 0 8px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+      position: sticky; top: 0; z-index: 10; background: var(--bg); padding: 4px 0 8px;
     }
     .tab {
-      border: 1px solid var(--border);
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 10px;
-      text-align: center;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      border: 1px solid var(--border); background: var(--card); border-radius: var(--radius);
+      padding: 10px; text-align: center; font-size: 14px; cursor: pointer;
+      transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     }
     .tab.active {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
+      background: var(--primary); color: #fff; border-color: var(--primary);
       box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
     }
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     .section { display: none; gap: 12px; }
     .section.active { display: flex; flex-direction: column; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 12px;
-    }
-    label {
-      font-size: 13px;
-      color: var(--muted);
-      display: block;
-      margin-bottom: 6px;
-    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
     input, textarea, select, button {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-      font-size: 14px;
-      transition: border 0.2s ease, box-shadow 0.2s ease;
+      width: 100%; border-radius: 10px; border: 1px solid var(--border);
+      padding: 10px 12px; font-size: 14px; transition: border 0.2s ease, box-shadow 0.2s ease;
       background: #fff;
     }
     input:focus, textarea:focus, select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
     textarea { min-height: 120px; resize: vertical; }
-    button {
-      cursor: pointer;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      font-weight: 600;
-    }
+    button { cursor: pointer; background: var(--primary); color: #fff; border: none; font-weight: 600; }
     button.secondary { background: var(--secondary); color: #fff; }
-    button.ghost {
-      background: #fff;
-      color: var(--secondary);
-      border: 1px solid var(--border);
-    }
+    button.ghost { background: #fff; color: var(--secondary); border: 1px solid var(--border); }
     button.danger { background: var(--danger); color: #fff; }
     button.success { background: var(--success); color: #fff; }
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .btn-row button { flex: 1; min-width: 120px; }
     .muted { color: var(--muted); font-size: 12px; }
     .toast {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--secondary);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      font-size: 14px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      z-index: 999;
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: var(--secondary); color: #fff; padding: 10px 14px; border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2); font-size: 14px; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease; z-index: 999;
     }
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-6px);
-    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
     .flex { display: flex; gap: 12px; }
     .flex-col { display: flex; flex-direction: column; gap: 8px; }
-    .image-list {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .image-list { display: flex; gap: 8px; flex-wrap: wrap; }
     .image-item {
-      position: relative;
-      width: 90px;
-      height: 90px;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      background: #f1f5f9;
+      position: relative; width: 90px; height: 90px; border-radius: 12px;
+      overflow: hidden; border: 1px solid var(--border); background: #f1f5f9;
     }
-    .image-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .image-item img { width: 100%; height: 100%; object-fit: cover; }
     .image-item button {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 24px;
-      height: 24px;
-      padding: 0;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      border: none;
-      font-size: 14px;
-      line-height: 24px;
+      position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; padding: 0;
+      border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 14px; line-height: 24px;
     }
     .code-area {
-      width: 100%;
-      min-height: 240px;
-      padding: 12px;
+      width: 100%; min-height: 240px; padding: 12px;
       font-family: "JetBrains Mono", "Cascadia Code", monospace;
-      background: #0b1220;
-      color: #e2e8f0;
-      border-radius: var(--radius);
-      border: 1px solid #1f2937;
-      resize: vertical;
-      white-space: pre;
-      overflow: auto;
+      background: #0b1220; color: #e2e8f0; border-radius: var(--radius);
+      border: 1px solid #1f2937; resize: vertical; white-space: pre; overflow: auto;
     }
     .code-area[contenteditable="true"] { outline: 2px solid var(--primary); }
-    .panel {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+    .panel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 768px) {
       .tabs { grid-template-columns: repeat(2, 1fr); }
       .panel { grid-template-columns: 1fr; }
       .btn-row button { flex: 1 1 calc(50% - 8px); min-width: 140px; }
     }
     .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: #e0e7ff;
-      color: var(--primary);
-      font-size: 12px;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px; border-radius: 999px; background: #e0e7ff; color: var(--primary); font-size: 12px;
     }
     .note {
-      padding: 10px;
-      border-radius: 12px;
-      background: #fef9c3;
-      border: 1px solid #fcd34d;
-      color: #92400e;
-      font-size: 13px;
-      line-height: 1.5;
+      padding: 10px; border-radius: 12px; background: #fef9c3; border: 1px solid #fcd34d;
+      color: #92400e; font-size: 13px; line-height: 1.5;
+    }
+    .tag {
+      display: inline-block; padding: 4px 8px; border-radius: 8px; background: #e2e8f0; color: #475569; font-size: 12px;
     }
   </style>
 </head>
@@ -263,6 +153,14 @@
         <div class="btn-row">
           <button id="saveApiBtn">保存设置</button>
           <button class="secondary" id="testApiBtn">测试连接</button>
+          <button class="ghost" id="fetchModelsBtn">拉取模型</button>
+        </div>
+        <div class="flex-col">
+          <label>可用模型（拉取后展示，可点击填充到 Model）</label>
+          <div class="code-area" id="modelList" style="min-height:120px;" contenteditable="false"></div>
+        </div>
+        <div class="note" style="background:#ecfeff;border-color:#a5f3fc;color:#0f172a;">
+          已启用「唯一指定 HTML 架构库」约束：后续生成将锁定模板，只允许填充变量或新增变量，不改骨架。
         </div>
       </div>
     </div>
@@ -271,30 +169,12 @@
     <div class="section" id="page2">
       <div class="card flex-col">
         <div class="grid">
-          <div>
-            <label>尺寸大小</label>
-            <input id="sizeInput" placeholder="例如：375x667，或 100% 宽度" />
-          </div>
-          <div>
-            <label>主题配色</label>
-            <input id="themeInput" placeholder="例如：深色科技蓝、莫兰迪" />
-          </div>
-          <div>
-            <label>主要功能</label>
-            <input id="featureInput" placeholder="例如：角色聊天、查看聊天记录、听歌记录" />
-          </div>
-          <div>
-            <label>形状大小</label>
-            <input id="shapeInput" placeholder="例如：圆形、正方形、长方形、心形" />
-          </div>
-          <div>
-            <label>风格</label>
-            <input id="styleInput" placeholder="例如：报纸风、杂志风、高级感" />
-          </div>
-          <div>
-            <label>其他要求</label>
-            <textarea id="otherInput" placeholder="补充配色、尺寸、形状、风格、功能等"></textarea>
-          </div>
+          <div><label>尺寸大小</label><input id="sizeInput" placeholder="例如：375x667，或 100% 宽度" /></div>
+          <div><label>主题配色</label><input id="themeInput" placeholder="例如：深色科技蓝、莫兰迪" /></div>
+          <div><label>主要功能</label><input id="featureInput" placeholder="例如：角色聊天、查看聊天记录、听歌记录" /></div>
+          <div><label>形状大小</label><input id="shapeInput" placeholder="例如：圆形、正方形、长方形、心形" /></div>
+          <div><label>风格</label><input id="styleInput" placeholder="例如：报纸风、杂志风、高级感" /></div>
+          <div><label>其他要求</label><textarea id="otherInput" placeholder="补充配色、尺寸、形状、风格、功能等"></textarea></div>
         </div>
 
         <div class="flex-col">
@@ -303,8 +183,35 @@
           <div class="image-list" id="imageList"></div>
         </div>
 
+        <div class="card flex-col" style="background:#f8fafc;border-style:dashed;">
+          <div class="flex" style="flex-wrap:wrap;gap:8px;">
+            <span class="tag">模板变量</span>
+            <span class="muted">这些变量将直接填充到唯一模板中，可留空由 AI 生成。</span>
+          </div>
+          <div class="grid">
+            <div><label>persona_name</label><input id="var_persona_name" /></div>
+            <div><label>bag_description</label><input id="var_bag_description" /></div>
+            <div><label>scene_bg</label><input id="var_scene_bg" placeholder="背景色，如 #f6f6f6" /></div>
+            <div><label>bag_main_color</label><input id="var_bag_main_color" placeholder="包包主色" /></div>
+            <div><label>bag_dark_color</label><input id="var_bag_dark_color" placeholder="包包深色" /></div>
+            <div><label>accent_color</label><input id="var_accent_color" placeholder="强调色" /></div>
+            <div><label>text_color</label><input id="var_text_color" placeholder="文字颜色" /></div>
+            <div><label>radius_val</label><input id="var_radius_val" placeholder="例如 18px" /></div>
+            <div><label>style_class</label><input id="var_style_class" placeholder="例如 style-cyber / style-vintage / style-elegant" /></div>
+            <div><label>char_evaluation</label><input id="var_char_evaluation" /></div>
+            <div><label>i1_emoji</label><input id="var_i1_emoji" placeholder="📸 等" /></div>
+            <div><label>i1_name</label><input id="var_i1_name" /></div>
+            <div><label>i1_title</label><input id="var_i1_title" /></div>
+            <div><label>i1_desc</label><textarea id="var_i1_desc"></textarea></div>
+          </div>
+          <div class="flex-col">
+            <label>新增变量（可选，按行填写 key=value，或 JSON 对象）</label>
+            <textarea id="var_extra" placeholder="例如：&#10;i2_name=Second Card&#10;i2_desc=更多描述&#10;或直接粘贴 JSON 对象"></textarea>
+          </div>
+        </div>
+
         <div class="btn-row">
-          <button id="saveReqBtn">保存需求</button>
+          <button id="saveReqBtn">保存需求与变量</button>
         </div>
       </div>
     </div>
@@ -373,9 +280,26 @@
       local: 'ai_html_local'
     };
 
-    const state = {
-      images: []
-    };
+    const TEMPLATE_HTML = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport"content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><style>:root{--v11-bg:{{scene_bg}};--v11-bag-main:{{bag_main_color}};--v11-bag-dark:{{bag_dark_color}};--v11-accent:{{accent_color}};--v11-text:{{text_color}};--v11-rad:{{radius_val}}}.v11-scope{all:initial;display:block;font-family:-apple-system,"SF Pro SC",sans-serif;background-color:var(--v11-bg);width:340px;margin:20px auto;padding:24px 16px;box-sizing:border-box;position:relative;border-radius:35px;overflow:hidden;z-index:1}.v11-scope *,.v11-scope *::before,.v11-scope *::after{box-sizing:inherit;-webkit-tap-highlight-color:transparent}.v11-header{text-align:center;margin-bottom:20px}.v11-header h2{margin:0;font-size:16px;color:var(--v11-text);letter-spacing:1px;font-weight:800;text-transform:uppercase}.v11-tag{display:inline-block;background:rgba(0,0,0,.06);color:var(--v11-text);opacity:.7;padding:2px 10px;border-radius:6px;font-size:9px;margin-top:5px}.v11-stage{position:relative;width:100%;height:480px;display:flex;justify-content:center;overflow:hidden;perspective:1200px}.v11-logic-gate{display:none!important}.v11-insert-container{position:absolute;bottom:-390px;width:250px;height:380px;z-index:5;transition:all .8s cubic-bezier(.19,1,.22,1);opacity:0}.v11-scroll-view{width:100%;height:100%;overflow-y:auto;padding:20px 10px 160px;display:flex;flex-direction:column;align-items:center;gap:20px;scrollbar-width:none}.v11-scroll-view::-webkit-scrollbar{display:none}.v11-polaroid{flex-shrink:0;width:155px;background:#fff;padding:10px 10px 30px;box-shadow:0 6px 15px rgba(0,0,0,.12);border:1px solid #eee;cursor:pointer;transform:rotate(var(--r,0deg));transition:.3s}.v11-photo{width:100%;height:110px;background:#f8f8f8;display:flex;align-items:center;justify-content:center;font-size:45px}.v11-p-label{font-family:monospace;font-size:10px;text-align:center;margin-top:10px;color:#888;text-transform:uppercase;border-top:1px dashed #eee;padding-top:6px}.v11-bag-container{position:absolute;bottom:10px;width:200px;height:145px;z-index:20;transform-style:preserve-3d}.v11-side-fold{position:absolute;top:0;left:5%;width:90%;height:0;background:var(--v11-bag-dark);opacity:0;transition:.7s;clip-path:polygon(10% 0%,90% 0%,100% 100%,0% 100%);z-index:19}.v11-bag-body{position:absolute;width:100%;height:100%;background:linear-gradient(135deg,var(--v11-bag-main),var(--v11-bag-dark));border:2px solid rgba(0,0,0,.2);border-radius:var(--v11-rad);box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:20;cursor:pointer}.v11-bag-lid{position:absolute;top:-3px;left:-3px;width:calc(100% + 6px);height:80px;background:var(--v11-bag-main);border:2px solidrgba(0,0,0,.2);border-radius:var(--v11-rad) var(--v11-rad) 6px 6px;transform-origin:top;transition:.7s cubic-bezier(.4,0,.2,1);z-index:30}.v11-part-strap{position:absolute;top:-5px;width:20px;height:calc(100% + 10px);background:rgba(0,0,0,.4);left:30px;display:none;box-shadow:2px 0 5px rgba(0,0,0,.2);border-radius:2px}.v11-part-strap-r{left:auto;right:30px}.v11-part-neon{position:absolute;top:15px;right:15px;width:10px;height:10px;background:var(--v11-accent);border-radius:50%;box-shadow:0 0 15px var(--v11-accent);display:none}.v11-part-jewel{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:22px;height:22px;background:radial-gradient(circle at 30% 30%,#fff,var(--v11-accent));border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,.2);display:none}.v11-lock{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);width:28px;height:26px;background:var(--v11-accent);border-radius:4px;z-index:31}.style-vintage .v11-part-strap{display:block}.style-cyber .v11-part-neon{display:block}.style-cyber .v11-bag-body{border-left:5px solid var(--v11-accent)}.style-elegant .v11-part-jewel{display:block}#bag_gate:checked~.v11-insert-container{bottom:100px;opacity:1;z-index:25}#bag_gate:checked+.v11-bag-container .v11-bag-lid{transform:rotateX(135deg);opacity:.9}#bag_gate:checked+.v11-bag-container .v11-side-fold{height:155px;top:-10px;opacity:.5}.v11-note{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);width:290px;background:#fff;padding:25px;border-radius:4px;z-index:10001;opacity:0;visibility:hidden;transition:.3s;border-top:15px solid var(--v11-accent);box-shadow:0 30px 80px rgba(0,0,0,.5)}.v11-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:10000;opacity:0;visibility:hidden;transition:.3s}.v11-logic-gate:checked+.v11-note,.v11-logic-gate:checked+.v11-note+.v11-overlay{opacity:1;visibility:visible}.v11-logic-gate:checked+.v11-note{transform:translate(-50%,-50%) scale(1)}.v11-footer{text-align:center;font-size:10px;color:#999;margin-top:25px;letter-spacing:1px}</style></head><body><div class="v11-scope"><div class="v11-header"><h2>{{persona_name}}'S BAG</h2><div class="v11-tag">{{bag_description}}</div></div><div class="v11-stage"><input type="checkbox"id="bag_gate"class="v11-logic-gate"><label for="bag_gate"class="v11-bag-container {{style_class}}"><div class="v11-side-fold"></div><div class="v11-bag-body"></div><div class="v11-part-strap"></div><div class="v11-part-strap v11-part-strap-r"></div><div class="v11-part-neon"></div><div class="v11-bag-lid"><div class="v11-lock"></div><div class="v11-part-jewel"></div></div></label><div class="v11-insert-container"><div class="v11-scroll-view"><label for="i1"class="v11-polaroid"style="--r:-2deg;"><div class="v11-photo">{{i1_emoji}}</div><div class="v11-p-label">{{i1_name}}</div></label></div></div><input type="checkbox"id="i1"class="v11-logic-gate"><div class="v11-note"><div style="font-size:15px;font-weight:700;color:var(--v11-bag-main)">{{i1_title}}</div><div style="font-size:13px;color:#555;margin-top:10px;line-height:1.6">{{i1_desc}}</div><label for="i1"style="display:block;margin-top:20px;text-align:center;font-size:11px;color:#999;cursor:pointer">[ BACK ]</label></div><label for="i1"class="v11-overlay"></label></div><div class="v11-footer">- {{char_evaluation}} -</div></div></body></html>`;
+
+    const state = { images: [] };
+
+    const defaultVars = () => ({
+      persona_name: '',
+      bag_description: '',
+      scene_bg: '',
+      bag_main_color: '',
+      bag_dark_color: '',
+      accent_color: '',
+      text_color: '',
+      radius_val: '',
+      style_class: '',
+      char_evaluation: '',
+      i1_emoji: '',
+      i1_name: '',
+      i1_title: '',
+      i1_desc: ''
+    });
 
     function showToast(msg, dur = 2200) {
       toastEl.textContent = msg;
@@ -395,7 +319,7 @@
       });
     });
 
-    /* Load saved data */
+    /* Load/save helpers */
     function loadApi() {
       const data = JSON.parse(localStorage.getItem(STORAGE.api) || '{}');
       qs('#apiUrl').value = data.url || '';
@@ -413,6 +337,48 @@
       localStorage.setItem(STORAGE.api, JSON.stringify(api));
       showToast('API 设置已保存');
     }
+
+    function collectVarsFromForm() {
+      const vars = defaultVars();
+      vars.persona_name = qs('#var_persona_name').value.trim();
+      vars.bag_description = qs('#var_bag_description').value.trim();
+      vars.scene_bg = qs('#var_scene_bg').value.trim();
+      vars.bag_main_color = qs('#var_bag_main_color').value.trim();
+      vars.bag_dark_color = qs('#var_bag_dark_color').value.trim();
+      vars.accent_color = qs('#var_accent_color').value.trim();
+      vars.text_color = qs('#var_text_color').value.trim();
+      vars.radius_val = qs('#var_radius_val').value.trim();
+      vars.style_class = qs('#var_style_class').value.trim();
+      vars.char_evaluation = qs('#var_char_evaluation').value.trim();
+      vars.i1_emoji = qs('#var_i1_emoji').value.trim();
+      vars.i1_name = qs('#var_i1_name').value.trim();
+      vars.i1_title = qs('#var_i1_title').value.trim();
+      vars.i1_desc = qs('#var_i1_desc').value.trim();
+      return vars;
+    }
+
+    function parseExtraVars(text) {
+      if (!text) return {};
+      const t = text.trim();
+      try {
+        const obj = JSON.parse(t);
+        if (obj && typeof obj === 'object') return obj;
+      } catch (e) { /* fallback */ }
+      const lines = t.split(/\r?\n/);
+      const out = {};
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) return;
+        const idx = trimmed.indexOf('=');
+        if (idx > 0) {
+          const key = trimmed.slice(0, idx).trim();
+          const val = trimmed.slice(idx + 1).trim();
+          if (key) out[key] = val;
+        }
+      });
+      return out;
+    }
+
     function loadReq() {
       const data = JSON.parse(localStorage.getItem(STORAGE.req) || '{}');
       qs('#sizeInput').value = data.size || '';
@@ -421,10 +387,28 @@
       qs('#shapeInput').value = data.shape || '';
       qs('#styleInput').value = data.style || '';
       qs('#otherInput').value = data.other || '';
+      qs('#var_persona_name').value = data.vars?.persona_name || '';
+      qs('#var_bag_description').value = data.vars?.bag_description || '';
+      qs('#var_scene_bg').value = data.vars?.scene_bg || '';
+      qs('#var_bag_main_color').value = data.vars?.bag_main_color || '';
+      qs('#var_bag_dark_color').value = data.vars?.bag_dark_color || '';
+      qs('#var_accent_color').value = data.vars?.accent_color || '';
+      qs('#var_text_color').value = data.vars?.text_color || '';
+      qs('#var_radius_val').value = data.vars?.radius_val || '';
+      qs('#var_style_class').value = data.vars?.style_class || '';
+      qs('#var_char_evaluation').value = data.vars?.char_evaluation || '';
+      qs('#var_i1_emoji').value = data.vars?.i1_emoji || '';
+      qs('#var_i1_name').value = data.vars?.i1_name || '';
+      qs('#var_i1_title').value = data.vars?.i1_title || '';
+      qs('#var_i1_desc').value = data.vars?.i1_desc || '';
+      qs('#var_extra').value = data.extraVarsRaw || '';
       state.images = data.images || [];
       renderImages();
     }
+
     function saveReq() {
+      const vars = collectVarsFromForm();
+      const extraVarsRaw = qs('#var_extra').value;
       const req = {
         size: qs('#sizeInput').value.trim(),
         theme: qs('#themeInput').value.trim(),
@@ -432,10 +416,12 @@
         shape: qs('#shapeInput').value.trim(),
         style: qs('#styleInput').value.trim(),
         other: qs('#otherInput').value.trim(),
+        vars,
+        extraVarsRaw,
         images: state.images || []
       };
       localStorage.setItem(STORAGE.req, JSON.stringify(req));
-      showToast('需求已保存');
+      showToast('需求与变量已保存');
     }
 
     function loadGen() {
@@ -487,6 +473,22 @@
       return text.trim();
     }
 
+    function extractVarsFromText(text) {
+      if (!text) return null;
+      try {
+        const obj = JSON.parse(text);
+        if (obj && typeof obj === 'object') return obj;
+      } catch (e) { /* ignore */ }
+      return null;
+    }
+
+    function applyTemplate(vars) {
+      const allVars = { ...defaultVars(), ...vars };
+      return TEMPLATE_HTML.replace(/{{\s*([\w\d_]+)\s*}}/g, (_, key) => {
+        return allVars[key] != null ? allVars[key] : '';
+      });
+    }
+
     /* Image upload */
     qs('#imageInput').addEventListener('change', (e) => {
       const files = Array.from(e.target.files || []);
@@ -534,10 +536,7 @@
       try {
         const res = await fetch(api.url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + api.key
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + api.key },
           body: JSON.stringify({
             model: api.model,
             messages: [{ role: 'user', content: 'ping' }],
@@ -552,10 +551,49 @@
       }
     }
 
+    function deriveModelsUrl(urlStr) {
+      try {
+        const u = new URL(urlStr);
+        u.pathname = u.pathname.replace(/\/chat\/completions?$/i, '');
+        if (!u.pathname.endsWith('/models')) u.pathname = u.pathname.replace(/\/$/, '') + '/models';
+        return u.toString();
+      } catch (e) {
+        if (urlStr.endsWith('/chat/completions')) return urlStr.replace(/\/chat\/completions$/, '/models');
+        return urlStr.replace(/\/$/, '') + '/models';
+      }
+    }
+
+    async function fetchModels() {
+      const api = JSON.parse(localStorage.getItem(STORAGE.api) || '{}');
+      if (!api.url || !api.key) {
+        showToast('请先填写并保存 API URL / Key');
+        return;
+      }
+      const modelsUrl = deriveModelsUrl(api.url);
+      showToast('拉取模型中...');
+      try {
+        const res = await fetch(modelsUrl, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + api.key }
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const ids = (data.data || []).map(m => m.id).join('\n');
+        qs('#modelList').textContent = ids || '未返回可用模型';
+        showToast('模型已拉取');
+        if (ids.split('\n')[0]) qs('#apiModel').value = ids.split('\n')[0];
+      } catch (err) {
+        console.error(err);
+        showToast('拉取模型失败：' + (err.message || 'error'));
+      }
+    }
+
     /* Prompt builder */
     function buildPrompt(req) {
       const lines = [];
-      lines.push('请生成一个完整、可直接运行、移动端优先适配的 HTML 页面：');
+      lines.push('你是前端模板变量填充助手。必须使用给定的唯一 HTML 模板骨架，不得改动结构、类名、层级和 CSS，仅可返回变量 JSON。');
+      lines.push('模板骨架占位符列表：persona_name, bag_description, scene_bg, bag_main_color, bag_dark_color, accent_color, text_color, radius_val, style_class, char_evaluation, i1_emoji, i1_name, i1_title, i1_desc，以及我声明的新增变量。');
+      lines.push('用户需求：');
       if (req.size) lines.push('尺寸大小: ' + req.size);
       if (req.theme) lines.push('主题配色: ' + req.theme);
       if (req.feature) lines.push('主要功能: ' + req.feature);
@@ -563,12 +601,16 @@
       if (req.style) lines.push('风格: ' + req.style);
       if (req.other) lines.push('其他要求: ' + req.other);
       if ((req.images || []).length) {
-        lines.push('参考图片（名称与Base64示意）：');
+        lines.push('参考图片（名称与Base64已附在消息的 image_url）：');
         req.images.forEach((img, i) => lines.push(`图片${i+1}: ${img.name}`));
-        // 为防过长，不直接在提示里塞 dataURL，可在 content parts 传图
       }
-      lines.push('请直接输出完整 HTML 代码，包含必要的 CSS/JS，并确保适配手机端。');
-      return lines.join('\\n');
+      lines.push('如果用户已提供部分变量值，请保持并补全缺失项。可新增变量满足需求，但不要改写模板结构。');
+      lines.push('只输出 JSON 对象（不包含任何解释或代码块标记），键为变量名，值为字符串。');
+      return lines.join('\n');
+    }
+
+    function mergeVars(userVars, extraVars, modelVars) {
+      return { ...userVars, ...extraVars, ...modelVars };
     }
 
     /* Generate via API */
@@ -580,39 +622,42 @@
         return;
       }
       const prompt = buildPrompt(req);
+      const userVars = req.vars || {};
+      const extraVars = parseExtraVars(req.extraVarsRaw || {});
       showToast('生成中...');
 
       const messages = [];
       if (api.sysPrompt) messages.push({ role: 'system', content: api.sysPrompt });
       const userContent = [{ type: 'text', text: prompt }];
-      // If API supports images in chat messages (vision), include them:
       (req.images || []).forEach(img => {
-        userContent.push({
-          type: 'image_url',
-          image_url: { url: img.data, detail: 'auto' }
-        });
+        userContent.push({ type: 'image_url', image_url: { url: img.data, detail: 'auto' } });
       });
       messages.push({ role: 'user', content: userContent });
 
       try {
         const res = await fetch(api.url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + api.key
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + api.key },
           body: JSON.stringify({
             model: api.model,
             messages,
-            temperature: 0.6,
-            max_tokens: 4096
+            temperature: 0.5,
+            max_tokens: 2048
           })
         });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        const choice = data.choices?.[0]?.message?.content || '';
-        if (!choice) throw new Error('无返回内容');
-        saveGen(choice);
+        const content = data.choices?.[0]?.message?.content || '';
+        if (!content) throw new Error('无返回内容');
+        let modelVars = {};
+        try {
+          modelVars = JSON.parse(content);
+        } catch (e) {
+          modelVars = extractVarsFromText(content) || {};
+        }
+        const finalVars = mergeVars(userVars, extraVars, modelVars);
+        const finalHtml = applyTemplate(finalVars);
+        saveGen(finalHtml);
         renderPreview();
         showToast('生成完成');
       } catch (err) {
@@ -630,10 +675,7 @@
     /* Buttons - page3 */
     qs('#genBtn').addEventListener('click', generateHtml);
     qs('#modifyBtn').addEventListener('click', () => {
-      if (!qs('#generatedCode').textContent.trim()) {
-        showToast('暂无生成内容可修改');
-        return;
-      }
+      if (!qs('#generatedCode').textContent.trim()) { showToast('暂无生成内容可修改'); return; }
       qs('#generatedCode').setAttribute('contenteditable', 'true');
       qs('#generatedCode').focus();
       showToast('已进入修改模式');
@@ -666,9 +708,10 @@
     /* Page2 save */
     qs('#saveReqBtn').addEventListener('click', saveReq);
 
-    /* Page1 save/test */
+    /* Page1 save/test/fetch */
     qs('#saveApiBtn').addEventListener('click', saveApi);
     qs('#testApiBtn').addEventListener('click', testApi);
+    qs('#fetchModelsBtn').addEventListener('click', fetchModels);
 
     /* Page4 local file */
     qs('#importLocalBtn').addEventListener('click', () => qs('#importLocalInput').click());
@@ -678,13 +721,16 @@
       try {
         const ext = file.name.toLowerCase().split('.').pop();
         let rawText = '';
-        if (ext === 'docx') {
-          rawText = await parseDocx(file);
+        if (ext === 'docx') rawText = await parseDocx(file);
+        else rawText = await file.text();
+        const vars = extractVarsFromText(rawText);
+        if (vars) {
+          const finalHtml = applyTemplate(vars);
+          saveLocal(finalHtml);
         } else {
-          rawText = await file.text();
+          const code = extractCodeFromText(rawText);
+          saveLocal(code);
         }
-        const code = extractCodeFromText(rawText);
-        saveLocal(code);
         showToast('导入完成');
       } catch (err) {
         console.error(err);
@@ -699,10 +745,7 @@
       if (editable) saveLocal(qs('#localCode').textContent);
       else qs('#localCode').focus();
     });
-    qs('#deleteLocalBtn').addEventListener('click', () => {
-      saveLocal('');
-      showToast('已删除');
-    });
+    qs('#deleteLocalBtn').addEventListener('click', () => { saveLocal(''); showToast('已删除'); });
     qs('#copyLocalBtn').addEventListener('click', () => {
       const code = qs('#localCode').textContent;
       navigator.clipboard.writeText(code).then(() => showToast('已复制'));
@@ -717,7 +760,16 @@
     });
     qs('#previewLocalBtn').addEventListener('click', () => {
       const code = qs('#localCode').textContent;
-      qs('#localPreview').srcdoc = code || '<p style="padding:12px;color:#64748b;">暂无内容</p>';
+      const vars = extractVarsFromText(code);
+      if (vars) {
+        const html = applyTemplate(vars);
+        qs('#localPreview').srcdoc = html;
+      } else if (code && !code.includes('<html')) {
+        const html = applyTemplate({ content: code });
+        qs('#localPreview').srcdoc = html;
+      } else {
+        qs('#localPreview').srcdoc = code || '<p style="padding:12px;color:#64748b;">暂无内容</p>';
+      }
     });
 
     /* Init */
